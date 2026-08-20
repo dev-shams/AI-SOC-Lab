@@ -159,6 +159,22 @@ Z:\Simulations\Invoke-SocLabScenario.ps1 -Scenario EncodedPowerShell
 
 ---
 
+## Incidents
+
+| # | Case | Behaviour | ATT&CK | Severity |
+| --- | --- | --- | --- | --- |
+| [001](Investigations/incident-001-suspicious-powershell/incident-report.md) | Suspicious PowerShell | Nested PowerShell with `-ExecutionPolicy Bypass` | T1059.001 | Level 4 |
+| [002](Investigations/incident-002-encoded-powershell/incident-report.md) | Encoded PowerShell | Base64 `-EncodedCommand`, decoded during triage | T1059.001, T1027 | Level 12 |
+| [003](Investigations/incident-003-temporary-admin-account/incident-report.md) | Temporary admin account | Account created, elevated, and deleted in 100 ms | T1136.001, T1098, T1070 | Level 12 |
+
+Incident 003 is the most substantive: investigating it found that Wazuh's
+built-in mapping for rule `60154` asserts `T1484` (Domain Policy Modification)
+for a *local* group change on a non-domain-joined host, which is wrong. It also
+exposed that four of the seven events had no behavioural triage rule and were
+falling through to a lab-marker label. Both are documented and fixed.
+
+---
+
 ## Detection engineering
 
 Eight Sigma rules in [`Detections/sigma/`](Detections/sigma/) and five hunting

@@ -46,19 +46,36 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--minutes", type=int, default=10080, help="lookback window (default: 7 days)")
     parser.add_argument("--size", type=int, default=60, help="max alerts per queue")
+    parser.add_argument(
+        "--fetch",
+        type=int,
+        default=3000,
+        help="alerts to pull from the indexer before triage (default: 3000)",
+    )
     parser.add_argument("--min-level", type=int, default=4, help="minimum Wazuh rule level")
     parser.add_argument("--anonymize", action="store_true", help="replace the operator username with 'analyst'")
     parser.add_argument("--user", default="Shams", help="username to replace when --anonymize is set")
     args = parser.parse_args()
 
-    params = {
-        "minutes": [str(args.minutes)],
-        "min_level": [str(args.min_level)],
-        "size": [str(args.size)],
+    # Deliberately not server.alerts_query(): that caps the fetch at 300 and
+    # sorts newest-first, so a wide window returns only the most recent slice
+    # and silently drops older candidate alerts. The snapshot needs to triage
+    # the whole window, then pick the best of each queue.
+    query = {
+        "size": args.fetch,
+        "sort": [{"timestamp": {"order": "desc"}}],
+        "query": {
+            "bool": {
+                "must": [
+                    {"range": {"timestamp": {"gte": f"now-{args.minutes}m"}}},
+                    {"range": {"rule.level": {"gte": args.min_level}}},
+                ]
+            }
+        },
     }
 
     try:
-        result = server.request_indexer("/wazuh-alerts-*/_search", server.alerts_query(params))
+        result = server.request_indexer("/wazuh-alerts-*/_search", query)
     except Exception as error:
         print(f"Could not reach the Wazuh indexer at {server.INDEXER_URL}: {error}", file=sys.stderr)
         print("Start the stack with ./scripts/start-lab.sh and try again.", file=sys.stderr)
@@ -70,6 +87,7 @@ def main():
         return 1
 
     alerts = [server.simplify_alert(hit) for hit in hits]
+    print(f"Pulled {len(alerts)} alerts from the indexer, triaging…")
     queues = {}
     summary = {}
     for profile in PROFILES:

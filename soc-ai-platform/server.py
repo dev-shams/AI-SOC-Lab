@@ -14,6 +14,8 @@ import ai
 
 ROOT = Path(__file__).resolve().parent
 MAX_REQUEST_BYTES = 1_000_000
+# Upper bound on alerts pulled from the indexer per request before triage.
+FETCH_CEILING = int(os.getenv("WAZUH_FETCH_CEILING", "1500"))
 INDEXER_URL = os.getenv("WAZUH_INDEXER_URL", "https://127.0.0.1:9200").rstrip("/")
 INDEXER_USER = os.getenv("WAZUH_INDEXER_USER", "admin")
 INDEXER_PASSWORD = os.getenv("WAZUH_INDEXER_PASSWORD", "SecretPassword")
@@ -531,8 +533,11 @@ def alerts_query(params):
             }
         )
 
+    # Fetch well beyond the requested page size, because triage runs after the
+    # query: candidates are a small fraction of the stream, and a tight cap on a
+    # wide time range returns only the newest slice and silently hides them.
     return {
-        "size": min(size * 4, 300),
+        "size": min(max(size * 10, 500), FETCH_CEILING),
         "sort": [{"timestamp": {"order": "desc"}}],
         "query": {"bool": {"must": must}},
     }

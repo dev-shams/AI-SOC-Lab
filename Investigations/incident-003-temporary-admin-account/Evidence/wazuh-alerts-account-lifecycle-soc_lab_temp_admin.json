@@ -1,0 +1,779 @@
+[
+  {
+    "_id": "73D0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "scriptPath": "%%1793",
+            "passwordLastSet": "%%1794",
+            "homeDirectory": "%%1793",
+            "userParameters": "%%1793",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "displayName": "%%1793",
+            "accountExpires": "%%1794",
+            "homePath": "%%1793",
+            "samAccountName": "soc_lab_temp_admin",
+            "targetUserName": "soc_lab_temp_admin",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "primaryGroupId": "513",
+            "logonHours": "%%1797",
+            "targetDomainName": "WIN11-SOC-ENDPO",
+            "profilePath": "%%1793",
+            "userWorkstations": "%%1793",
+            "oldUacValue": "0x0",
+            "newUacValue": "0x15",
+            "targetSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "userAccountControl": "    %%2080    %%2082    %%2084",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4720",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A user account was created.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nNew Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nAttributes:\r\n\tSAM Account Name:\tsoc_lab_temp_admin\r\n\tDisplay Name:\t\t<value not set>\r\n\tUser Principal Name:\t-\r\n\tHome Directory:\t\t<value not set>\r\n\tHome Drive:\t\t<value not set>\r\n\tScript Path:\t\t<value not set>\r\n\tProfile Path:\t\t<value not set>\r\n\tUser Workstations:\t<value not set>\r\n\tPassword Last Set:\t<never>\r\n\tAccount Expires:\t\t<never>\r\n\tPrimary Group ID:\t513\r\n\tAllowed To Delegate To:\t-\r\n\tOld UAC Value:\t\t0x0\r\n\tNew UAC Value:\t\t0x15\r\n\tUser Account Control:\t\r\n\t\tAccount Disabled\r\n\t\t'Password Not Required' - Enabled\r\n\t\t'Normal Account' - Enabled\r\n\tUser Parameters:\t<value not set>\r\n\tSID History:\t\t-\r\n\tLogon Hours:\t\tAll\r\n\r\nAdditional Information:\r\n\tPrivileges\t\t-\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.2796109Z",
+            "eventRecordID": "48389",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13824",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": false,
+        "level": 8,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "User account enabled or created",
+        "groups": [
+          "windows",
+          "windows_security",
+          "adduser",
+          "account_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 1,
+        "mitre": {
+          "technique": [
+            "Account Manipulation"
+          ],
+          "id": [
+            "T1098"
+          ],
+          "tactic": [
+            "Persistence"
+          ]
+        },
+        "id": "60109",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:11.982Z",
+      "location": "EventChannel",
+      "id": "1784793011.959489",
+      "timestamp": "2026-07-23T07:50:11.982+0000"
+    }
+  },
+  {
+    "_id": "7nD0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "targetUserName": "soc_lab_temp_admin",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "targetDomainName": "WIN11-SOC-ENDPO",
+            "targetSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4722",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A user account was enabled.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.2960260Z",
+            "eventRecordID": "48390",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13824",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": false,
+        "level": 8,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "User account enabled or created",
+        "groups": [
+          "windows",
+          "windows_security",
+          "adduser",
+          "account_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 2,
+        "mitre": {
+          "technique": [
+            "Account Manipulation"
+          ],
+          "id": [
+            "T1098"
+          ],
+          "tactic": [
+            "Persistence"
+          ]
+        },
+        "id": "60109",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:11.985Z",
+      "location": "EventChannel",
+      "id": "1784793011.956694",
+      "timestamp": "2026-07-23T07:50:11.985+0000"
+    }
+  },
+  {
+    "_id": "8HD0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "scriptPath": "%%1793",
+            "passwordLastSet": "%%1794",
+            "homeDirectory": "%%1793",
+            "userParameters": "%%1793",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "displayName": "%%1793",
+            "accountExpires": "%%1794",
+            "homePath": "%%1793",
+            "samAccountName": "soc_lab_temp_admin",
+            "targetUserName": "soc_lab_temp_admin",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "primaryGroupId": "513",
+            "logonHours": "%%1797",
+            "targetDomainName": "WIN11-SOC-ENDPO",
+            "profilePath": "%%1793",
+            "userWorkstations": "%%1793",
+            "oldUacValue": "0x15",
+            "newUacValue": "0x14",
+            "targetSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "userAccountControl": "    %%2048",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4738",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A user account was changed.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nChanged Attributes:\r\n\tSAM Account Name:\tsoc_lab_temp_admin\r\n\tDisplay Name:\t\t<value not set>\r\n\tUser Principal Name:\t-\r\n\tHome Directory:\t\t<value not set>\r\n\tHome Drive:\t\t<value not set>\r\n\tScript Path:\t\t<value not set>\r\n\tProfile Path:\t\t<value not set>\r\n\tUser Workstations:\t<value not set>\r\n\tPassword Last Set:\t<never>\r\n\tAccount Expires:\t\t<never>\r\n\tPrimary Group ID:\t513\r\n\tAllowedToDelegateTo:\t-\r\n\tOld UAC Value:\t\t0x15\r\n\tNew UAC Value:\t\t0x14\r\n\tUser Account Control:\t\r\n\t\tAccount Enabled\r\n\tUser Parameters:\t<value not set>\r\n\tSID History:\t\t-\r\n\tLogon Hours:\t\tAll\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.2961539Z",
+            "eventRecordID": "48391",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13824",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": false,
+        "level": 8,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "User account changed",
+        "groups": [
+          "windows",
+          "windows_security",
+          "account_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 1,
+        "mitre": {
+          "technique": [
+            "Account Manipulation"
+          ],
+          "id": [
+            "T1098"
+          ],
+          "tactic": [
+            "Persistence"
+          ]
+        },
+        "id": "60110",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:11.986Z",
+      "location": "EventChannel",
+      "id": "1784793011.964670",
+      "timestamp": "2026-07-23T07:50:11.986+0000"
+    }
+  },
+  {
+    "_id": "8XD0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "targetUserName": "soc_lab_temp_admin",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "targetDomainName": "WIN11-SOC-ENDPO",
+            "targetSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4738",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A user account was changed.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nChanged Attributes:\r\n\tSAM Account Name:\t-\r\n\tDisplay Name:\t\t-\r\n\tUser Principal Name:\t-\r\n\tHome Directory:\t\t-\r\n\tHome Drive:\t\t-\r\n\tScript Path:\t\t-\r\n\tProfile Path:\t\t-\r\n\tUser Workstations:\t-\r\n\tPassword Last Set:\t-\r\n\tAccount Expires:\t\t-\r\n\tPrimary Group ID:\t-\r\n\tAllowedToDelegateTo:\t-\r\n\tOld UAC Value:\t\t-\r\n\tNew UAC Value:\t\t-\r\n\tUser Account Control:\t-\r\n\tUser Parameters:\t-\r\n\tSID History:\t\t-\r\n\tLogon Hours:\t\t-\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.4001154Z",
+            "eventRecordID": "48392",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13824",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": false,
+        "level": 8,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "User account changed",
+        "groups": [
+          "windows",
+          "windows_security",
+          "account_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 2,
+        "mitre": {
+          "technique": [
+            "Account Manipulation"
+          ],
+          "id": [
+            "T1098"
+          ],
+          "tactic": [
+            "Persistence"
+          ]
+        },
+        "id": "60110",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:11.988Z",
+      "location": "EventChannel",
+      "id": "1784793011.969670",
+      "timestamp": "2026-07-23T07:50:11.988+0000"
+    }
+  },
+  {
+    "_id": "8nD0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "targetUserName": "Administrators",
+            "memberSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "targetDomainName": "Builtin",
+            "targetSid": "S-1-5-32-544",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4732",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A member was added to a security-enabled local group.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nMember:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\t-\r\n\r\nGroup:\r\n\tSecurity ID:\t\tS-1-5-32-544\r\n\tGroup Name:\t\tAdministrators\r\n\tGroup Domain:\t\tBuiltin\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.6588837Z",
+            "eventRecordID": "48395",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13826",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": true,
+        "level": 12,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "Administrators Group Changed",
+        "groups": [
+          "windows",
+          "windows_security",
+          "group_changed",
+          "win_group_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 1,
+        "mitre": {
+          "technique": [
+            "Domain Policy Modification"
+          ],
+          "id": [
+            "T1484"
+          ],
+          "tactic": [
+            "Defense Evasion",
+            "Privilege Escalation"
+          ]
+        },
+        "id": "60154",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:12.013Z",
+      "location": "EventChannel",
+      "id": "1784793012.973433",
+      "timestamp": "2026-07-23T07:50:12.013+0000"
+    }
+  },
+  {
+    "_id": "83D0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "targetUserName": "Administrators",
+            "memberSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "targetDomainName": "Builtin",
+            "targetSid": "S-1-5-32-544",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4733",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A member was removed from a security-enabled local group.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nMember:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\t-\r\n\r\nGroup:\r\n\tSecurity ID:\t\tS-1-5-32-544\r\n\tGroup Name:\t\tAdministrators\r\n\tGroup Domain:\t\tBuiltin\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.6835090Z",
+            "eventRecordID": "48397",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13826",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": true,
+        "level": 12,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "Administrators Group Changed",
+        "groups": [
+          "windows",
+          "windows_security",
+          "group_changed",
+          "win_group_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 2,
+        "mitre": {
+          "technique": [
+            "Domain Policy Modification"
+          ],
+          "id": [
+            "T1484"
+          ],
+          "tactic": [
+            "Defense Evasion",
+            "Privilege Escalation"
+          ]
+        },
+        "id": "60154",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:12.048Z",
+      "location": "EventChannel",
+      "id": "1784793012.976512",
+      "timestamp": "2026-07-23T07:50:12.048+0000"
+    }
+  },
+  {
+    "_id": "9XD0jZ8BfU4fm0WGJOfC",
+    "_index": "wazuh-alerts-4.x-2026.07.23",
+    "_source": {
+      "agent": {
+        "ip": "192.168.64.3",
+        "name": "WIN11-SOC-ENDPOINT",
+        "id": "001"
+      },
+      "manager": {
+        "name": "wazuh.manager"
+      },
+      "data": {
+        "win": {
+          "eventdata": {
+            "subjectLogonId": "0x17a54",
+            "targetUserName": "soc_lab_temp_admin",
+            "subjectUserSid": "S-1-5-21-3627987222-3469180906-1209694690-1001",
+            "subjectDomainName": "WIN11-SOC-ENDPO",
+            "targetDomainName": "WIN11-SOC-ENDPO",
+            "targetSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+            "subjectUserName": "Shams"
+          },
+          "system": {
+            "eventID": "4726",
+            "keywords": "0x8020000000000000",
+            "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+            "level": "0",
+            "channel": "Security",
+            "opcode": "0",
+            "message": "\"A user account was deleted.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nAdditional Information:\r\n\tPrivileges\t-\"",
+            "version": "0",
+            "systemTime": "2026-07-23T07:50:10.6978867Z",
+            "eventRecordID": "48399",
+            "threadID": "9756",
+            "computer": "WIN11-SOC-ENDPOINT",
+            "task": "13824",
+            "processID": "872",
+            "severityValue": "AUDIT_SUCCESS",
+            "providerName": "Microsoft-Windows-Security-Auditing"
+          }
+        }
+      },
+      "rule": {
+        "mail": false,
+        "level": 8,
+        "pci_dss": [
+          "8.1.2",
+          "10.2.5"
+        ],
+        "hipaa": [
+          "164.312.a.2.I",
+          "164.312.a.2.II",
+          "164.312.b"
+        ],
+        "tsc": [
+          "CC6.8",
+          "CC7.2",
+          "CC7.3"
+        ],
+        "description": "User account disabled or deleted",
+        "groups": [
+          "windows",
+          "windows_security",
+          "adduser",
+          "account_changed"
+        ],
+        "nist_800_53": [
+          "AC.2",
+          "IA.4",
+          "AU.14",
+          "AC.7"
+        ],
+        "gdpr": [
+          "IV_35.7.d",
+          "IV_32.2"
+        ],
+        "firedtimes": 1,
+        "mitre": {
+          "technique": [
+            "Account Manipulation",
+            "Account Access Removal"
+          ],
+          "id": [
+            "T1098",
+            "T1531"
+          ],
+          "tactic": [
+            "Persistence",
+            "Impact"
+          ]
+        },
+        "id": "60111",
+        "gpg13": [
+          "7.10"
+        ]
+      },
+      "decoder": {
+        "name": "windows_eventchannel"
+      },
+      "input": {
+        "type": "log"
+      },
+      "@timestamp": "2026-07-23T07:50:12.082Z",
+      "location": "EventChannel",
+      "id": "1784793012.982803",
+      "timestamp": "2026-07-23T07:50:12.082+0000"
+    }
+  }
+]

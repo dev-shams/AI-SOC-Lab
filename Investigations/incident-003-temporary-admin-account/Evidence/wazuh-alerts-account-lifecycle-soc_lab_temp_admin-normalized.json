@@ -1,0 +1,542 @@
+[
+  {
+    "id": "73D0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:11.982+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60109",
+      "level": 8,
+      "description": "User account enabled or created",
+      "groups": [
+        "windows",
+        "windows_security",
+        "adduser",
+        "account_changed"
+      ],
+      "mitreId": "T1098",
+      "mitreTactic": "Persistence",
+      "mitreTechnique": "Account Manipulation"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4720",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A user account was created.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nNew Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nAttributes:\r\n\tSAM Account Name:\tsoc_lab_temp_admin\r\n\tDisplay Name:\t\t<value not set>\r\n\tUser Principal Name:\t-\r\n\tHome Directory:\t\t<value not set>\r\n\tHome Drive:\t\t<value not set>\r\n\tScript Path:\t\t<value not set>\r\n\tProfile Path:\t\t<value not set>\r\n\tUser Workstations:\t<value not set>\r\n\tPassword Last Set:\t<never>\r\n\tAccount Expires:\t\t<never>\r\n\tPrimary Group ID:\t513\r\n\tAllowed To Delegate To:\t-\r\n\tOld UAC Value:\t\t0x0\r\n\tNew UAC Value:\t\t0x15\r\n\tUser Account Control:\t\r\n\t\tAccount Disabled\r\n\t\t'Password Not Required' - Enabled\r\n\t\t'Normal Account' - Enabled\r\n\tUser Parameters:\t<value not set>\r\n\tSID History:\t\t-\r\n\tLogon Hours:\t\tAll\r\n\r\nAdditional Information:\r\n\tPrivileges\t\t-\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "Local user account created",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "soc_lab_temp_admin",
+      "targetDomain": "WIN11-SOC-ENDPO",
+      "memberName": "",
+      "memberSid": "",
+      "groupName": "",
+      "groupDomain": ""
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 92,
+      "reason": "Windows local account creation event detected",
+      "policyRule": "SOC-ACCOUNT-001",
+      "policyTitle": "Local user account created",
+      "mitre": [
+        "T1136.001"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-001",
+          "title": "Local user account created",
+          "score": 92,
+          "status": "candidate"
+        },
+        {
+          "id": "SOC-ACCOUNT-003",
+          "title": "SOC lab administrator scenario",
+          "score": 55,
+          "status": "candidate"
+        }
+      ]
+    }
+  },
+  {
+    "id": "7nD0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:11.985+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60109",
+      "level": 8,
+      "description": "User account enabled or created",
+      "groups": [
+        "windows",
+        "windows_security",
+        "adduser",
+        "account_changed"
+      ],
+      "mitreId": "T1098",
+      "mitreTactic": "Persistence",
+      "mitreTechnique": "Account Manipulation"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4722",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A user account was enabled.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "User account enabled",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "soc_lab_temp_admin",
+      "targetDomain": "WIN11-SOC-ENDPO",
+      "memberName": "",
+      "memberSid": "",
+      "groupName": "",
+      "groupDomain": ""
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 85,
+      "reason": "Local account enabled or its properties changed",
+      "policyRule": "SOC-ACCOUNT-006",
+      "policyTitle": "Local user account enabled or modified",
+      "mitre": [
+        "T1098"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-006",
+          "title": "Local user account enabled or modified",
+          "score": 85,
+          "status": "candidate"
+        },
+        {
+          "id": "SOC-ACCOUNT-003",
+          "title": "SOC lab administrator scenario",
+          "score": 55,
+          "status": "candidate"
+        }
+      ]
+    }
+  },
+  {
+    "id": "8HD0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:11.986+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60110",
+      "level": 8,
+      "description": "User account changed",
+      "groups": [
+        "windows",
+        "windows_security",
+        "account_changed"
+      ],
+      "mitreId": "T1098",
+      "mitreTactic": "Persistence",
+      "mitreTechnique": "Account Manipulation"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4738",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A user account was changed.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nChanged Attributes:\r\n\tSAM Account Name:\tsoc_lab_temp_admin\r\n\tDisplay Name:\t\t<value not set>\r\n\tUser Principal Name:\t-\r\n\tHome Directory:\t\t<value not set>\r\n\tHome Drive:\t\t<value not set>\r\n\tScript Path:\t\t<value not set>\r\n\tProfile Path:\t\t<value not set>\r\n\tUser Workstations:\t<value not set>\r\n\tPassword Last Set:\t<never>\r\n\tAccount Expires:\t\t<never>\r\n\tPrimary Group ID:\t513\r\n\tAllowedToDelegateTo:\t-\r\n\tOld UAC Value:\t\t0x15\r\n\tNew UAC Value:\t\t0x14\r\n\tUser Account Control:\t\r\n\t\tAccount Enabled\r\n\tUser Parameters:\t<value not set>\r\n\tSID History:\t\t-\r\n\tLogon Hours:\t\tAll\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "User account changed",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "soc_lab_temp_admin",
+      "targetDomain": "WIN11-SOC-ENDPO",
+      "memberName": "",
+      "memberSid": "",
+      "groupName": "",
+      "groupDomain": ""
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 85,
+      "reason": "Local account enabled or its properties changed",
+      "policyRule": "SOC-ACCOUNT-006",
+      "policyTitle": "Local user account enabled or modified",
+      "mitre": [
+        "T1098"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-006",
+          "title": "Local user account enabled or modified",
+          "score": 85,
+          "status": "candidate"
+        },
+        {
+          "id": "SOC-ACCOUNT-003",
+          "title": "SOC lab administrator scenario",
+          "score": 55,
+          "status": "candidate"
+        }
+      ]
+    }
+  },
+  {
+    "id": "8XD0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:11.988+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60110",
+      "level": 8,
+      "description": "User account changed",
+      "groups": [
+        "windows",
+        "windows_security",
+        "account_changed"
+      ],
+      "mitreId": "T1098",
+      "mitreTactic": "Persistence",
+      "mitreTechnique": "Account Manipulation"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4738",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A user account was changed.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nChanged Attributes:\r\n\tSAM Account Name:\t-\r\n\tDisplay Name:\t\t-\r\n\tUser Principal Name:\t-\r\n\tHome Directory:\t\t-\r\n\tHome Drive:\t\t-\r\n\tScript Path:\t\t-\r\n\tProfile Path:\t\t-\r\n\tUser Workstations:\t-\r\n\tPassword Last Set:\t-\r\n\tAccount Expires:\t\t-\r\n\tPrimary Group ID:\t-\r\n\tAllowedToDelegateTo:\t-\r\n\tOld UAC Value:\t\t-\r\n\tNew UAC Value:\t\t-\r\n\tUser Account Control:\t-\r\n\tUser Parameters:\t-\r\n\tSID History:\t\t-\r\n\tLogon Hours:\t\t-\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "User account changed",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "soc_lab_temp_admin",
+      "targetDomain": "WIN11-SOC-ENDPO",
+      "memberName": "",
+      "memberSid": "",
+      "groupName": "",
+      "groupDomain": ""
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 85,
+      "reason": "Local account enabled or its properties changed",
+      "policyRule": "SOC-ACCOUNT-006",
+      "policyTitle": "Local user account enabled or modified",
+      "mitre": [
+        "T1098"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-006",
+          "title": "Local user account enabled or modified",
+          "score": 85,
+          "status": "candidate"
+        },
+        {
+          "id": "SOC-ACCOUNT-003",
+          "title": "SOC lab administrator scenario",
+          "score": 55,
+          "status": "candidate"
+        }
+      ]
+    }
+  },
+  {
+    "id": "8nD0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:12.013+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60154",
+      "level": 12,
+      "description": "Administrators Group Changed",
+      "groups": [
+        "windows",
+        "windows_security",
+        "group_changed",
+        "win_group_changed"
+      ],
+      "mitreId": "T1484",
+      "mitreTactic": "Defense Evasion",
+      "mitreTechnique": "Domain Policy Modification"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4732",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A member was added to a security-enabled local group.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nMember:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\t-\r\n\r\nGroup:\r\n\tSecurity ID:\t\tS-1-5-32-544\r\n\tGroup Name:\t\tAdministrators\r\n\tGroup Domain:\t\tBuiltin\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "Member added to local security group",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "Administrators",
+      "targetDomain": "Builtin",
+      "memberName": "",
+      "memberSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+      "groupName": "Administrators",
+      "groupDomain": "Builtin"
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 96,
+      "reason": "Account added to a privileged local group",
+      "policyRule": "SOC-ACCOUNT-002",
+      "policyTitle": "Member added to local Administrators group",
+      "mitre": [
+        "T1098"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-002",
+          "title": "Member added to local Administrators group",
+          "score": 96,
+          "status": "candidate"
+        }
+      ]
+    }
+  },
+  {
+    "id": "83D0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:12.048+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60154",
+      "level": 12,
+      "description": "Administrators Group Changed",
+      "groups": [
+        "windows",
+        "windows_security",
+        "group_changed",
+        "win_group_changed"
+      ],
+      "mitreId": "T1484",
+      "mitreTactic": "Defense Evasion",
+      "mitreTechnique": "Domain Policy Modification"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4733",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A member was removed from a security-enabled local group.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nMember:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\t-\r\n\r\nGroup:\r\n\tSecurity ID:\t\tS-1-5-32-544\r\n\tGroup Name:\t\tAdministrators\r\n\tGroup Domain:\t\tBuiltin\r\n\r\nAdditional Information:\r\n\tPrivileges:\t\t-\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "Member removed from local security group",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "Administrators",
+      "targetDomain": "Builtin",
+      "memberName": "",
+      "memberSid": "S-1-5-21-3627987222-3469180906-1209694690-1003",
+      "groupName": "Administrators",
+      "groupDomain": "Builtin"
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 90,
+      "reason": "Account removed from a privileged local group",
+      "policyRule": "SOC-ACCOUNT-004",
+      "policyTitle": "Member removed from local Administrators group",
+      "mitre": [
+        "T1098",
+        "T1070"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-004",
+          "title": "Member removed from local Administrators group",
+          "score": 90,
+          "status": "candidate"
+        }
+      ]
+    }
+  },
+  {
+    "id": "9XD0jZ8BfU4fm0WGJOfC",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:50:12.082+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "60111",
+      "level": 8,
+      "description": "User account disabled or deleted",
+      "groups": [
+        "windows",
+        "windows_security",
+        "adduser",
+        "account_changed"
+      ],
+      "mitreId": "T1098",
+      "mitreTactic": "Persistence",
+      "mitreTechnique": "Account Manipulation"
+    },
+    "event": {
+      "channel": "Security",
+      "eventId": "4726",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "message": "\"A user account was deleted.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1001\r\n\tAccount Name:\t\tShams\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\tLogon ID:\t\t0x17A54\r\n\r\nTarget Account:\r\n\tSecurity ID:\t\tS-1-5-21-3627987222-3469180906-1209694690-1003\r\n\tAccount Name:\t\tsoc_lab_temp_admin\r\n\tAccount Domain:\t\tWIN11-SOC-ENDPO\r\n\r\nAdditional Information:\r\n\tPrivileges\t-\""
+    },
+    "process": {
+      "image": "",
+      "parentImage": "",
+      "commandLine": "",
+      "parentCommandLine": "",
+      "currentDirectory": "",
+      "user": "WIN11-SOC-ENDPO\\Shams",
+      "processId": "",
+      "parentProcessId": "",
+      "hashes": ""
+    },
+    "account": {
+      "action": "User account deleted",
+      "actor": "WIN11-SOC-ENDPO\\Shams",
+      "actorDomain": "WIN11-SOC-ENDPO",
+      "actorUser": "Shams",
+      "targetUser": "soc_lab_temp_admin",
+      "targetDomain": "WIN11-SOC-ENDPO",
+      "memberName": "",
+      "memberSid": "",
+      "groupName": "",
+      "groupDomain": ""
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 88,
+      "reason": "Local account deleted; check whether it was created recently by the same actor",
+      "policyRule": "SOC-ACCOUNT-005",
+      "policyTitle": "Local user account deleted",
+      "mitre": [
+        "T1070"
+      ],
+      "detection": {},
+      "matches": [
+        {
+          "id": "SOC-ACCOUNT-005",
+          "title": "Local user account deleted",
+          "score": 88,
+          "status": "candidate"
+        },
+        {
+          "id": "SOC-ACCOUNT-003",
+          "title": "SOC lab administrator scenario",
+          "score": 55,
+          "status": "candidate"
+        }
+      ]
+    }
+  }
+]

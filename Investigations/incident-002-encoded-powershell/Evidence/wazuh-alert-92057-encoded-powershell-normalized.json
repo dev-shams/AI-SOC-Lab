@@ -1,0 +1,87 @@
+[
+  {
+    "id": "0nDPjZ8BfU4fm0WGpOfF",
+    "index": "wazuh-alerts-4.x-2026.07.23",
+    "timestamp": "2026-07-23T07:10:13.264+0000",
+    "agent": {
+      "id": "001",
+      "name": "WIN11-SOC-ENDPOINT",
+      "ip": "192.168.64.3"
+    },
+    "manager": "wazuh.manager",
+    "rule": {
+      "id": "92057",
+      "level": 12,
+      "description": "Powershell.exe spawned a powershell process which executed a base64 encoded command",
+      "groups": [
+        "sysmon",
+        "sysmon_eid1_detections",
+        "windows"
+      ],
+      "mitreId": "T1059.001",
+      "mitreTactic": "Execution",
+      "mitreTechnique": "PowerShell"
+    },
+    "event": {
+      "channel": "Microsoft-Windows-Sysmon/Operational",
+      "eventId": "1",
+      "provider": "Microsoft-Windows-Sysmon",
+      "message": "\"Process Create:\r\nRuleName: -\r\nUtcTime: 2026-07-23 07:10:11.721\r\nProcessGuid: {39942fc6-be53-6a61-ef04-000000000e00}\r\nProcessId: 2780\r\nImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nFileVersion: 10.0.26100.8875 (WinBuild.160101.0800)\r\nDescription: Windows PowerShell\r\nProduct: Microsoft\u00ae Windows\u00ae Operating System\r\nCompany: Microsoft Corporation\r\nOriginalFileName: PowerShell.EXE\r\nCommandLine: \"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -EncodedCommand VwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAAnAFMATwBDAC0ATABBAEIALQBFAE4AQwBPAEQARQBEAC0AMAAwADEAJwA7ACAAdwBoAG8AYQBtAGkAOwAgAGgAbwBzAHQAbgBhAG0AZQA=\r\nCurrentDirectory: C:\\Users\\Shams\\\r\nUser: WIN11-SOC-ENDPO\\Shams\r\nLogonGuid: {39942fc6-19b8-6a61-547a-010000000000}\r\nLogonId: 0x17A54\r\nTerminalSessionId: 1\r\nIntegrityLevel: High\r\nHashes: SHA256=B3CEB27E6356848C37A5EE0C844C2D6E91F38D3EED2226757076321B05C65CAF\r\nParentProcessGuid: {39942fc6-be1f-6a61-e804-000000000e00}\r\nParentProcessId: 5700\r\nParentImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" \r\nParentUser: WIN11-SOC-ENDPO\\Shams\""
+    },
+    "process": {
+      "image": "C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe",
+      "parentImage": "C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe",
+      "commandLine": "\\\"C:\\\\WINDOWS\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -NoProfile -EncodedCommand VwByAGkAdABlAC0ATwB1AHQAcAB1AHQAIAAnAFMATwBDAC0ATABBAEIALQBFAE4AQwBPAEQARQBEAC0AMAAwADEAJwA7ACAAdwBoAG8AYQBtAGkAOwAgAGgAbwBzAHQAbgBhAG0AZQA=",
+      "parentCommandLine": "\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\"",
+      "currentDirectory": "C:\\\\Users\\\\Shams\\\\",
+      "user": "WIN11-SOC-ENDPO\\\\Shams",
+      "processId": "2780",
+      "parentProcessId": "5700",
+      "hashes": "SHA256=B3CEB27E6356848C37A5EE0C844C2D6E91F38D3EED2226757076321B05C65CAF"
+    },
+    "account": {
+      "action": "",
+      "actor": "",
+      "actorDomain": "",
+      "actorUser": "",
+      "targetUser": "",
+      "targetDomain": "",
+      "memberName": "",
+      "memberSid": "",
+      "groupName": "",
+      "groupDomain": ""
+    },
+    "triage": {
+      "status": "candidate",
+      "score": 98,
+      "reason": "PowerShell encoded command detected",
+      "policyRule": "SOC-PS-002",
+      "policyTitle": "PowerShell encoded command",
+      "mitre": [
+        "T1059.001",
+        "T1027"
+      ],
+      "detection": {
+        "title": "PowerShell Encoded Command",
+        "image_endswith": "\\powershell.exe",
+        "command_line_any": [
+          "-EncodedCommand",
+          "-enc "
+        ],
+        "level": "high",
+        "false_positives": [
+          "Legitimate encoded administration scripts",
+          "Authorized SOC lab validation activity"
+        ]
+      },
+      "matches": [
+        {
+          "id": "SOC-PS-002",
+          "title": "PowerShell encoded command",
+          "score": 98,
+          "status": "candidate"
+        }
+      ]
+    }
+  }
+]
