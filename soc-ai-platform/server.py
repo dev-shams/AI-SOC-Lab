@@ -10,8 +10,10 @@ import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import ai
 
 ROOT = Path(__file__).resolve().parent
+MAX_REQUEST_BYTES = 1_000_000
 INDEXER_URL = os.getenv("WAZUH_INDEXER_URL", "https://127.0.0.1:9200").rstrip("/")
 INDEXER_USER = os.getenv("WAZUH_INDEXER_USER", "admin")
 INDEXER_PASSWORD = os.getenv("WAZUH_INDEXER_PASSWORD", "SecretPassword")
@@ -630,10 +632,13 @@ class SocHandler(SimpleHTTPRequestHandler):
                         "cluster": health.get("cluster_name", "wazuh"),
                         "triageRules": len(rule_pack["rules"]),
                         "triageRuleVersion": rule_pack["version"],
+                        "ai": ai.status(),
                     }
                 )
             except Exception as error:
-                self.send_json({"mode": "demo", "error": str(error)}, status=503)
+                self.send_json(
+                    {"mode": "demo", "error": str(error), "ai": ai.status()}, status=503
+                )
             return
 
         if parsed.path == "/api/rules":
@@ -687,6 +692,41 @@ class SocHandler(SimpleHTTPRequestHandler):
             return
 
         super().do_GET()
+
+    def do_POST(self):
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path != "/api/analyze":
+            self.send_json({"error": "Unknown endpoint"}, status=404)
+            return
+
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self.send_json({"error": "Invalid Content-Length"}, status=400)
+            return
+        if length > MAX_REQUEST_BYTES:
+            self.send_json({"error": "Request body too large"}, status=413)
+            return
+
+        try:
+            payload = json.loads(self.rfile.read(length).decode() or "{}")
+        except (ValueError, UnicodeDecodeError) as error:
+            self.send_json({"error": f"Invalid JSON body: {error}"}, status=400)
+            return
+
+        alert = payload.get("alert")
+        if not isinstance(alert, dict) or not alert:
+            self.send_json({"error": "Missing alert object"}, status=400)
+            return
+
+        task = str(payload.get("task", "summary"))
+        question = str(payload.get("question", ""))[:2000]
+        context_events = payload.get("context")
+        if not isinstance(context_events, list):
+            context_events = []
+
+        result = ai.analyze(alert, context_events, task, question)
+        self.send_json(result)
 
 
 def main():

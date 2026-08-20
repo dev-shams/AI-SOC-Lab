@@ -64,6 +64,8 @@ let currentSection = "overview";
 let alertMinutes = 1440;
 let alertSearchTerm = "";
 let isInvestigationOpen = false;
+let isAnalyzing = false;
+let aiStatus = { enabled: false, reason: "", model: "" };
 
 const profileLabels = {
   candidates: "Incident candidates",
@@ -122,6 +124,9 @@ const alertDetailPanels = document.querySelectorAll("[data-alert-detail]");
 const closeAlertInvestigation = document.querySelector("#closeAlertInvestigation");
 const copyReportButton = document.querySelector("#copyReportButton");
 const demoAnalyzeButton = document.querySelector("#demoAnalyzeButton");
+const aiModeText = document.querySelector("#aiModeText");
+const aiPanelPill = document.querySelector("#aiPanelPill");
+const brandMode = document.querySelector("#brandMode");
 
 const sectionMeta = {
   overview: {
@@ -293,6 +298,117 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function inlineMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+}
+
+function renderMarkdownProse(source) {
+  const lines = source.split("\n");
+  const out = [];
+  let paragraph = [];
+  let listTag = "";
+  let tableRows = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    out.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listTag) return;
+    out.push(`</${listTag}>`);
+    listTag = "";
+  };
+  const flushTable = () => {
+    if (!tableRows.length) return;
+    const cellsFor = (row) => row.replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+    const isDivider = (row) => /^[\s|:-]+$/.test(row);
+    const header = isDivider(tableRows[1] || "") ? cellsFor(tableRows[0]) : null;
+    const bodyRows = tableRows.slice(header ? 2 : 0).filter((row) => !isDivider(row));
+    const head = header
+      ? `<thead><tr>${header.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join("")}</tr></thead>`
+      : "";
+    const body = bodyRows
+      .map((row) => `<tr>${cellsFor(row).map((cell) => `<td>${inlineMarkdown(cell)}</td>`).join("")}</tr>`)
+      .join("");
+    out.push(`<div class="md-table-wrap"><table class="md-table">${head}<tbody>${body}</tbody></table></div>`);
+    tableRows = [];
+  };
+
+  lines.forEach((rawLine) => {
+    const line = rawLine.trimEnd();
+
+    if (/^\s*\|.*\|\s*$/.test(line)) {
+      flushParagraph();
+      flushList();
+      tableRows.push(line.trim());
+      return;
+    }
+    flushTable();
+
+    if (!line.trim()) {
+      flushParagraph();
+      flushList();
+      return;
+    }
+
+    const heading = line.match(/^(#{1,4})\s+(.*)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const level = Math.min(heading[1].length + 2, 6);
+      out.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+      return;
+    }
+
+    if (/^\s*(---|___|\*\*\*)\s*$/.test(line)) {
+      flushParagraph();
+      flushList();
+      out.push("<hr>");
+      return;
+    }
+
+    const bullet = line.match(/^\s*[-*+]\s+(.*)$/);
+    const numbered = line.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (bullet || numbered) {
+      flushParagraph();
+      const wanted = bullet ? "ul" : "ol";
+      if (listTag !== wanted) {
+        flushList();
+        listTag = wanted;
+        out.push(`<${wanted}>`);
+      }
+      out.push(`<li>${inlineMarkdown((bullet || numbered)[1])}</li>`);
+      return;
+    }
+
+    flushList();
+    paragraph.push(line.trim());
+  });
+
+  flushParagraph();
+  flushList();
+  flushTable();
+  return out.join("");
+}
+
+function renderMarkdown(source) {
+  return String(source ?? "")
+    .split(/```/)
+    .map((part, index) => {
+      if (index % 2 === 0) return renderMarkdownProse(part);
+      const newline = part.indexOf("\n");
+      const language = newline === -1 ? "" : part.slice(0, newline).trim();
+      const code = newline === -1 ? part : part.slice(newline + 1);
+      const label = language ? ` data-lang="${escapeHtml(language)}"` : "";
+      return `<pre class="md-code"${label}><code>${escapeHtml(code.replace(/\n+$/, ""))}</code></pre>`;
+    })
+    .join("");
 }
 
 function artifactTemplates(alert) {
@@ -637,7 +753,8 @@ function syncInvestigationVisibility() {
   });
   const needsAlertSelection = currentSection === "alerts" && !isInvestigationOpen;
   copyReportButton.disabled = needsAlertSelection;
-  demoAnalyzeButton.disabled = needsAlertSelection;
+  demoAnalyzeButton.disabled = needsAlertSelection || isAnalyzing;
+  demoAnalyzeButton.textContent = isAnalyzing ? "Analyzing…" : "Analyze Alert";
   copyReportButton.title = needsAlertSelection ? "Select an alert to copy its report" : "Copy the selected alert report";
   demoAnalyzeButton.title = needsAlertSelection ? "Select an alert to analyze it" : "Analyze the selected alert";
 }
@@ -839,13 +956,62 @@ function renderRawEvent() {
   rawEventOutput.textContent = JSON.stringify(selectedAlert, null, 2);
 }
 
-function addMessage(kind, text) {
+function addMessage(kind, text, meta = "") {
   const message = document.createElement("div");
   message.className = `message ${kind}`;
-  const label = kind === "ai" ? "AI Analyst" : "You";
-  message.innerHTML = `<strong>${label}</strong>${text.replace(/\n/g, "<br>")}`;
+  const label = kind.startsWith("ai") ? "AI Analyst" : "You";
+  // Alert text can contain attacker-controlled command lines, so everything is
+  // escaped before any markdown formatting is applied.
+  const body = kind.startsWith("ai") ? renderMarkdown(text) : `<p>${inlineMarkdown(text)}</p>`;
+  const footer = meta ? `<span class="message-meta">${escapeHtml(meta)}</span>` : "";
+  message.innerHTML = `<strong>${escapeHtml(label)}</strong>${body}${footer}`;
   chatLog.appendChild(message);
   chatLog.scrollTop = chatLog.scrollHeight;
+  return message;
+}
+
+function analysisMeta(payload) {
+  if (payload.mode === "claude") {
+    const usage = payload.usage || {};
+    const cost = Number(usage.costUsd || 0).toFixed(4);
+    return `${payload.model} · ${usage.inputTokens || 0} in / ${usage.outputTokens || 0} out · $${cost}`;
+  }
+  return `Template mode — ${payload.reason || "Claude layer unavailable"}`;
+}
+
+async function requestAnalysis(task, question = "") {
+  if (isAnalyzing) return;
+  isAnalyzing = true;
+  syncInvestigationVisibility();
+  const pending = addMessage("ai pending", "Analyzing the evidence…");
+
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        task,
+        question,
+        alert: selectedAlert,
+        context: surroundingEvents,
+      }),
+    });
+    if (!response.ok) throw new Error(`Analyze request failed: ${response.status}`);
+    const payload = await response.json();
+    pending.remove();
+    addMessage("ai", payload.text, analysisMeta(payload));
+    setArtifact(payload.title || task, payload.text);
+  } catch {
+    // No backend (static demo build) or the request failed: use the local
+    // evidence templates so the panel still renders.
+    pending.remove();
+    const text = answerForPrompt(question || task);
+    addMessage("ai", text, "Offline template mode — no analysis backend reachable");
+    setArtifact("Generated", text);
+  } finally {
+    isAnalyzing = false;
+    syncInvestigationVisibility();
+  }
 }
 
 function answerForPrompt(prompt) {
@@ -956,11 +1122,8 @@ queueTabs.forEach((button) => {
 
 document.querySelectorAll("[data-prompt]").forEach((button) => {
   button.addEventListener("click", () => {
-    const prompt = button.dataset.prompt;
     addMessage("user", button.textContent);
-    const answer = answerForPrompt(prompt);
-    addMessage("ai", answer);
-    setArtifact(button.textContent, answer);
+    requestAnalysis(button.dataset.prompt);
   });
 });
 
@@ -989,17 +1152,14 @@ chatForm.addEventListener("submit", (event) => {
   const text = chatInput.value.trim();
   if (!text) return;
   addMessage("user", text);
-  const answer = answerForPrompt(text);
-  addMessage("ai", answer);
-  setArtifact("Generated", answer);
   chatInput.value = "";
+  requestAnalysis("chat", text);
 });
 
 demoAnalyzeButton.addEventListener("click", () => {
-  const artifacts = artifactTemplates(selectedAlert);
-  addMessage("user", "Analyze alert");
-  addMessage("ai", artifacts.summary);
-  setArtifact("Summary", artifacts.summary);
+  if (!isInvestigationOpen) return;
+  addMessage("user", "Analyze this alert");
+  requestAnalysis("summary");
 });
 
 copyReportButton.addEventListener("click", async () => {
@@ -1038,5 +1198,33 @@ closeAlertInvestigation.addEventListener("click", () => {
   renderAlertTable();
 });
 
-addMessage("ai", "Select a Wazuh alert, then ask for a summary, timeline, MITRE mapping, response plan, or detection logic.");
+async function loadHealth() {
+  try {
+    const response = await fetch("/api/health");
+    const payload = await response.json();
+    aiStatus = payload.ai || { enabled: false, reason: "Backend did not report AI status" };
+  } catch {
+    aiStatus = { enabled: false, reason: "No analysis backend reachable" };
+  }
+  renderAiStatus();
+}
+
+function renderAiStatus() {
+  if (aiStatus.enabled) {
+    aiModeText.textContent = `AI: ${aiStatus.model}`;
+    aiPanelPill.textContent = "Claude · evidence-bound";
+    brandMode.textContent = "Investigation console";
+  } else {
+    aiModeText.textContent = "AI: template mode";
+    aiPanelPill.textContent = "Template mode";
+    brandMode.textContent = "Template mode";
+  }
+  aiModeText.title = aiStatus.reason || "Claude investigation assistant is active";
+}
+
+addMessage(
+  "ai",
+  "Select a Wazuh alert, then ask for a **summary**, **timeline**, **MITRE** mapping, **response** plan, or **detection** logic.",
+);
+loadHealth();
 loadAlerts();

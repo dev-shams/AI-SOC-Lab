@@ -14,7 +14,7 @@
           <span class="brand-mark" aria-hidden="true"></span>
           <div>
             <h1>AI SOC</h1>
-            <p>Demo mode</p>
+            <p id="brandMode">Investigation console</p>
           </div>
         </div>
         <nav class="nav-list" aria-label="Sections">
@@ -30,6 +30,7 @@
           <div>
             <strong id="dataModeLabel">Connecting</strong>
             <span id="dataModeText">Checking Wazuh</span>
+            <span id="aiModeText" class="ai-state">Checking AI layer</span>
           </div>
         </div>
       </aside>
@@ -354,10 +355,10 @@
           <section class="panel ai-panel" aria-labelledby="ai-heading" data-alert-detail hidden>
             <div class="panel-header">
               <div>
-                <p class="eyebrow">Demo AI</p>
+                <p class="eyebrow">AI analyst</p>
                 <h3 id="ai-heading">Investigation Assistant</h3>
               </div>
-              <span class="pill">Evidence-bound</span>
+              <span id="aiPanelPill" class="pill">Evidence-bound</span>
             </div>
             <div id="chatLog" class="chat-log" aria-live="polite"></div>
             <div class="prompt-row" aria-label="Suggested prompts">

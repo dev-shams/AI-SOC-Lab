@@ -2007,3 +2007,159 @@ body[data-section="alerts"] .chat-form button:hover {
     transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Markdown rendering for model-written analysis.
+   Colours are derived from currentColor so the same rules work in the light
+   workspace and inside the dark Alerts workbench.
+   --------------------------------------------------------------------------- */
+
+.message.ai {
+  max-width: 96%;
+  line-height: 1.55;
+}
+
+.message.ai > h3,
+.message.ai > h4,
+.message.ai > h5,
+.message.ai > h6 {
+  margin: 14px 0 6px;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.message.ai > h3:first-of-type,
+.message.ai > h4:first-of-type {
+  margin-top: 4px;
+}
+
+.message.ai p {
+  margin: 0 0 8px;
+}
+
+.message.ai ul,
+.message.ai ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.message.ai li {
+  margin-bottom: 4px;
+}
+
+.message.ai hr {
+  height: 1px;
+  margin: 12px 0;
+  border: 0;
+  background: currentColor;
+  opacity: 0.16;
+}
+
+.message.ai code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(127, 143, 160, 0.18);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.92em;
+  word-break: break-word;
+}
+
+.md-code {
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: rgba(9, 20, 33, 0.9);
+  color: #d4e2f1;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.md-code code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+.md-code[data-lang]::before {
+  content: attr(data-lang);
+  display: block;
+  margin-bottom: 8px;
+  color: #7fa0bd;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.md-table-wrap {
+  margin: 8px 0 12px;
+  overflow-x: auto;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.md-table th,
+.md-table td {
+  padding: 7px 10px;
+  border: 1px solid rgba(127, 143, 160, 0.32);
+  text-align: left;
+  vertical-align: top;
+}
+
+.md-table th {
+  background: rgba(127, 143, 160, 0.14);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.message-meta {
+  display: block;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(127, 143, 160, 0.28);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  opacity: 0.72;
+}
+
+.message.pending {
+  opacity: 0.75;
+}
+
+.message.pending p::after {
+  content: "";
+  display: inline-block;
+  width: 0.6em;
+  margin-left: 2px;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: soc-ellipsis 1.2s steps(4, end) infinite;
+}
+
+@keyframes soc-ellipsis {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+}
+
+.chat-log {
+  height: 460px;
+}
+
+/* AI availability indicator in the sidebar mode panel */
+.mode-panel .ai-state {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.78;
+}

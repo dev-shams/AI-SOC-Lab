@@ -1,0 +1,4 @@
+# The console runs on the Python standard library alone.
+# This dependency is only needed for the Claude-backed investigation assistant;
+# without it the app falls back to deterministic evidence templates.
+anthropic>=0.125.0
