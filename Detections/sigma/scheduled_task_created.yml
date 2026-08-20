@@ -1,0 +1,38 @@
+title: Scheduled Task Created Via schtasks
+id: 0f395609-1ccb-4dfe-89e7-ee7e9964f982
+status: experimental
+description: |
+  Detects scheduled task creation through schtasks.exe. Scheduled tasks are a
+  durable persistence mechanism that survives reboot and runs without an
+  interactive session. Review the task action: a task launching a shell,
+  script host, or a binary from a user-writable directory is far more
+  suspicious than one launching a signed vendor updater.
+author: AI SOC Lab
+date: 2026/08/20
+references:
+  - https://attack.mitre.org/techniques/T1053/005/
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_image:
+    Image|endswith: '\\schtasks.exe'
+  selection_create:
+    CommandLine|contains:
+      - ' /create '
+      - ' /Create '
+  condition: selection_image and selection_create
+fields:
+  - Image
+  - ParentImage
+  - CommandLine
+  - User
+falsepositives:
+  - Software installers registering update tasks
+  - Enterprise management and backup agents
+  - Authorized SOC lab validation activity
+level: medium
+tags:
+  - attack.persistence
+  - attack.execution
+  - attack.t1053.005

@@ -1,0 +1,31 @@
+title: Local User Account Created
+id: 64a4d393-d87f-4494-a08e-0048d2b5711a
+status: experimental
+description: |
+  Detects creation of a local Windows user account (Security event 4720). On a
+  workstation this is uncommon outside of provisioning. Attackers create local
+  accounts to establish persistence that survives password resets on the
+  original compromised account.
+author: AI SOC Lab
+date: 2026/08/20
+references:
+  - https://attack.mitre.org/techniques/T1136/001/
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4720
+  condition: selection
+fields:
+  - SubjectUserName
+  - TargetUserName
+  - TargetDomainName
+falsepositives:
+  - Endpoint provisioning and imaging
+  - Local service accounts created by application installers
+  - Authorized SOC lab validation activity
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1136.001

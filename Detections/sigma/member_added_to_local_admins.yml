@@ -1,0 +1,38 @@
+title: Member Added To Local Administrators Group
+id: 1182f5c4-b76c-40e4-a885-101714a7b738
+status: experimental
+description: |
+  Detects an account being added to a security-enabled local group
+  (Security event 4732). When the target group is Administrators this is a
+  direct privilege escalation and should be correlated with any nearby 4720
+  account-creation event by the same actor.
+author: AI SOC Lab
+date: 2026/08/20
+references:
+  - https://attack.mitre.org/techniques/T1098/
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4732
+  selection_group:
+    TargetUserName:
+      - 'Administrators'
+      - 'Remote Desktop Users'
+      - 'Backup Operators'
+  condition: selection and selection_group
+fields:
+  - SubjectUserName
+  - MemberName
+  - MemberSid
+  - TargetUserName
+falsepositives:
+  - Helpdesk granting temporary local administrator rights through an approved process
+  - Endpoint management platforms adjusting group membership
+  - Authorized SOC lab validation activity
+level: high
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1098

@@ -1,0 +1,1 @@
+data.win.system.channel: "Security" and data.win.system.eventID: (4720 or 4722 or 4726 or 4732 or 4733 or 4738)

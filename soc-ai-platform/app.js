@@ -66,6 +66,8 @@ let alertSearchTerm = "";
 let isInvestigationOpen = false;
 let isAnalyzing = false;
 let aiStatus = { enabled: false, reason: "", model: "" };
+let snapshot = null;
+let isSnapshotMode = false;
 
 const profileLabels = {
   candidates: "Incident candidates",
@@ -1057,7 +1059,25 @@ function selectAlert(alert) {
   loadContext(alert);
 }
 
+async function loadSnapshot() {
+  if (snapshot) return snapshot;
+  try {
+    const response = await fetch("./sample-data/snapshot.json");
+    if (!response.ok) throw new Error("No snapshot available");
+    snapshot = await response.json();
+    return snapshot;
+  } catch {
+    return null;
+  }
+}
+
 async function loadContext(alert) {
+  if (isSnapshotMode) {
+    surroundingEvents = snapshot?.context?.[alert.id] || [];
+    renderDetails();
+    renderSection();
+    return;
+  }
   if (!alert.id || !alert.index || alert.index === "demo" || alert.index === "empty") return;
   try {
     const response = await fetch(`/api/alerts/${encodeURIComponent(alert.id)}/context?index=${encodeURIComponent(alert.index)}`);
@@ -1079,6 +1099,7 @@ async function loadAlerts() {
     const response = await fetch(`/api/alerts?minutes=${alertMinutes}&min_level=4&size=50&profile=${encodeURIComponent(currentProfile)}`);
     if (!response.ok) throw new Error("Wazuh API unavailable");
     const payload = await response.json();
+    isSnapshotMode = false;
     alertSummary = payload.summary || {};
     alerts = payload.alerts || [];
     selectedAlert = alerts[0] || emptyAlert;
@@ -1088,19 +1109,41 @@ async function loadAlerts() {
       : "Using sample alert";
     queueModePill.textContent = payload.mode === "live" ? profileLabels[currentProfile] : "Demo fallback";
   } catch {
-    alerts = [demoAlert];
-    selectedAlert = demoAlert;
-    alertSummary = {
-      raw: 1,
-      candidates: 1,
-      review: 0,
-      suppressed: 0,
-      severity: { critical: 0, high: 0, medium: 0, low: 1 },
-      agents: { active: 1, disconnected: 0 },
-    };
-    dataModeLabel.textContent = "Demo mode";
-    dataModeText.textContent = "Wazuh unavailable";
-    queueModePill.textContent = "Demo fallback";
+    // No live indexer. Serve the frozen export of real lab alerts if one was
+    // built (this is what the hosted demo runs on), otherwise the single
+    // bundled sample alert.
+    const frozen = await loadSnapshot();
+    if (frozen) {
+      isSnapshotMode = true;
+      alerts = frozen.queues?.[currentProfile] || [];
+      alertSummary = frozen.summary?.[currentProfile] || {};
+      selectedAlert = alerts[0] || emptyAlert;
+      const captured = frozen.generatedAt
+        ? new Date(frozen.generatedAt).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "unknown date";
+      dataModeLabel.textContent = "Snapshot";
+      dataModeText.textContent = `Real alerts frozen ${captured}`;
+      queueModePill.textContent = profileLabels[currentProfile] || "Alerts";
+    } else {
+      isSnapshotMode = false;
+      alerts = [demoAlert];
+      selectedAlert = demoAlert;
+      alertSummary = {
+        raw: 1,
+        candidates: 1,
+        review: 0,
+        suppressed: 0,
+        severity: { critical: 0, high: 0, medium: 0, low: 1 },
+        agents: { active: 1, disconnected: 0 },
+      };
+      dataModeLabel.textContent = "Demo mode";
+      dataModeText.textContent = "Wazuh unavailable";
+      queueModePill.textContent = "Demo fallback";
+    }
   }
   surroundingEvents = [];
   renderMetrics();

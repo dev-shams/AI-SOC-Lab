@@ -1,0 +1,1 @@
+data.win.system.eventID: 1 and (data.win.eventdata.image: "*schtasks.exe" and data.win.eventdata.commandLine: "*/create*") or data.win.eventdata.targetObject: "*\\CurrentVersion\\Run\\*"

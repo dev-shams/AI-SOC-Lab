@@ -1,0 +1,1 @@
+data.win.system.eventID: 1 and data.win.eventdata.image: "*powershell.exe" and (data.win.eventdata.commandLine: "*-EncodedCommand*" or data.win.eventdata.commandLine: "*-enc *")

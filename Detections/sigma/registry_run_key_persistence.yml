@@ -1,0 +1,44 @@
+title: Registry Run Key Modified For Persistence
+id: 1be5c5d7-e2c6-42fa-b55a-eee9df8ccd9f
+status: experimental
+description: |
+  Detects writes to the CurrentVersion\Run and RunOnce keys, which launch a
+  program at user logon. This is one of the oldest and most common persistence
+  mechanisms. Legitimate software uses it constantly, so the value data matters
+  more than the write itself.
+author: AI SOC Lab
+date: 2026/08/20
+references:
+  - https://attack.mitre.org/techniques/T1547/001/
+logsource:
+  product: windows
+  category: registry_set
+detection:
+  selection:
+    TargetObject|contains:
+      - '\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\'
+      - '\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\'
+  suspicious_value:
+    Details|contains:
+      - 'powershell'
+      - 'cmd.exe'
+      - 'wscript'
+      - 'cscript'
+      - 'mshta'
+      - 'rundll32'
+      - '\\AppData\\'
+      - '\\Temp\\'
+      - '\\Users\\Public\\'
+  condition: selection and suspicious_value
+fields:
+  - TargetObject
+  - Details
+  - Image
+  - User
+falsepositives:
+  - Legitimate applications registering a logon helper
+  - Authorized SOC lab validation activity
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1547.001

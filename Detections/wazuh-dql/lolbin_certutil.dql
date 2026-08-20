@@ -1,0 +1,1 @@
+data.win.system.eventID: 1 and data.win.eventdata.image: "*certutil.exe" and (data.win.eventdata.commandLine: "*-encode*" or data.win.eventdata.commandLine: "*-decode*" or data.win.eventdata.commandLine: "*-urlcache*")
