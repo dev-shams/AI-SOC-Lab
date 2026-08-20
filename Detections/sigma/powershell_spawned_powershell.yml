@@ -1,0 +1,29 @@
+title: PowerShell Spawned PowerShell
+id: 9225bcd5-8f7b-4218-914c-fd0cbb41c5f3
+status: experimental
+description: Detects PowerShell launching another PowerShell process. This may indicate nested shell execution, defense evasion, or scripted command execution.
+author: AI SOC Lab
+date: 2026/07/14
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_child:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+  selection_parent:
+    ParentImage|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+  condition: selection_child and selection_parent
+falsepositives:
+  - Administrative PowerShell scripts that launch child PowerShell sessions
+  - Software deployment tooling
+  - Developer or lab testing
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059.001

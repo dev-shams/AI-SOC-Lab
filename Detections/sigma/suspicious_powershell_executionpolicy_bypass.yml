@@ -1,0 +1,30 @@
+title: Suspicious PowerShell ExecutionPolicy Bypass
+id: 7a0f69b9-9dd5-4b8a-9fbf-5fc39a0d6f01
+status: experimental
+description: Detects PowerShell execution using ExecutionPolicy Bypass. This can be legitimate administration, but it is also common in attacker tradecraft.
+author: AI SOC Lab
+date: 2026/07/13
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_img:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+  selection_cli:
+    CommandLine|contains:
+      - '-ExecutionPolicy Bypass'
+      - '-ep bypass'
+      - '-exec bypass'
+  condition: selection_img and selection_cli
+falsepositives:
+  - Administrative scripts
+  - Software deployment tools
+  - Troubleshooting activity by IT staff
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059.001

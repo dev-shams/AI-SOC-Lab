@@ -1,0 +1,26 @@
+# macOS / Windows cruft
+.DS_Store
+Thumbs.db
+
+# Wazuh Docker deployment.
+# This is an upstream clone (github.com/wazuh/wazuh-docker) and, after running
+# generate-indexer-certs.yml, it contains real private keys:
+#   single-node/config/wazuh_indexer_ssl_certs/*.key
+#   single-node/config/wazuh_indexer_ssl_certs/*-key.pem
+# It is never committed. Recreate it with scripts/setup-wazuh.sh.
+wazuh-docker/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.key
+*-key.pem
+
+# Local runtime artifacts
+*.log
+soc-ai-platform/.cache/

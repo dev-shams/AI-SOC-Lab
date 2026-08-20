@@ -1,0 +1,226 @@
+{
+  "name": "AI SOC Lab triage policy",
+  "version": "1.0.0",
+  "description": "Evidence-based triage rules applied after Wazuh has generated an alert.",
+  "rules": [
+    {
+      "id": "SOC-PS-001",
+      "title": "PowerShell execution policy bypass",
+      "enabled": true,
+      "status": "candidate",
+      "score": 95,
+      "reason": "PowerShell execution policy bypass command detected",
+      "mitre": ["T1059.001"],
+      "detection": {
+        "title": "PowerShell Execution Policy Bypass",
+        "image_endswith": "\\powershell.exe",
+        "command_line_any": ["-ExecutionPolicy Bypass"],
+        "level": "medium",
+        "false_positives": [
+          "Administrator troubleshooting",
+          "Authorized SOC lab validation activity"
+        ]
+      },
+      "match": {
+        "all_text": ["powershell", "executionpolicy", "bypass"]
+      }
+    },
+    {
+      "id": "SOC-PS-002",
+      "title": "PowerShell encoded command",
+      "enabled": true,
+      "status": "candidate",
+      "score": 98,
+      "reason": "PowerShell encoded command detected",
+      "mitre": ["T1059.001", "T1027"],
+      "detection": {
+        "title": "PowerShell Encoded Command",
+        "image_endswith": "\\powershell.exe",
+        "command_line_any": ["-EncodedCommand", "-enc "],
+        "level": "high",
+        "false_positives": [
+          "Legitimate encoded administration scripts",
+          "Authorized SOC lab validation activity"
+        ]
+      },
+      "match": {
+        "any_text": ["-encodedcommand", " -enc ", "frombase64string"]
+      }
+    },
+    {
+      "id": "SOC-PS-003",
+      "title": "PowerShell download or in-memory execution",
+      "enabled": true,
+      "status": "candidate",
+      "score": 98,
+      "reason": "PowerShell download or in-memory execution pattern detected",
+      "mitre": ["T1059.001", "T1105"],
+      "match": {
+        "any_text": [
+          "downloadstring",
+          "invoke-webrequest",
+          "invoke-restmethod",
+          "net.webclient",
+          "invoke-expression",
+          " iex "
+        ]
+      }
+    },
+    {
+      "id": "SOC-PS-004",
+      "title": "SOC lab PowerShell scenario",
+      "enabled": true,
+      "status": "candidate",
+      "score": 96,
+      "reason": "Authorized SOC lab PowerShell marker detected",
+      "mitre": ["T1059.001"],
+      "match": {
+        "any_text": ["wazuh-powershell-test", "soc-lab-ps-", "soc-lab-encoded-"]
+      }
+    },
+    {
+      "id": "SOC-ACCOUNT-001",
+      "title": "Local user account created",
+      "enabled": true,
+      "status": "candidate",
+      "score": 92,
+      "reason": "Windows local account creation event detected",
+      "mitre": ["T1136.001"],
+      "match": {
+        "event_ids": ["4720"]
+      }
+    },
+    {
+      "id": "SOC-ACCOUNT-002",
+      "title": "Member added to local Administrators group",
+      "enabled": true,
+      "status": "candidate",
+      "score": 96,
+      "reason": "Account added to a privileged local group",
+      "mitre": ["T1098"],
+      "match": {
+        "event_ids": ["4732"]
+      }
+    },
+    {
+      "id": "SOC-ACCOUNT-003",
+      "title": "SOC lab administrator scenario",
+      "enabled": true,
+      "status": "candidate",
+      "score": 97,
+      "reason": "Authorized SOC lab temporary administrator marker detected",
+      "mitre": ["T1136.001", "T1098"],
+      "match": {
+        "any_text": ["wazuh-new-admin-test", "soc_lab_admin", "soc_lab_temp_admin", "new-localuser", "add-localgroupmember"]
+      }
+    },
+    {
+      "id": "SOC-PERSIST-001",
+      "title": "Scheduled task creation",
+      "enabled": true,
+      "status": "candidate",
+      "score": 92,
+      "reason": "Scheduled task creation command detected",
+      "mitre": ["T1053.005"],
+      "match": {
+        "any_text": ["schtasks /create", "schtasks.exe /create", "register-scheduledtask", "new-scheduledtask"]
+      }
+    },
+    {
+      "id": "SOC-PERSIST-002",
+      "title": "Registry Run key modification",
+      "enabled": true,
+      "status": "candidate",
+      "score": 94,
+      "reason": "Registry Run key persistence pattern detected",
+      "mitre": ["T1060"],
+      "match": {
+        "all_text": ["currentversion", "\\run"]
+      }
+    },
+    {
+      "id": "SOC-LOLBIN-001",
+      "title": "Certutil encode or decode",
+      "enabled": true,
+      "status": "candidate",
+      "score": 88,
+      "reason": "Certutil encode or decode activity detected",
+      "mitre": ["T1140"],
+      "match": {
+        "all_text": ["certutil", "-encode"]
+      }
+    },
+    {
+      "id": "SOC-LOLBIN-002",
+      "title": "Rundll32 execution",
+      "enabled": true,
+      "status": "review",
+      "score": 72,
+      "reason": "Rundll32 execution requires context review",
+      "mitre": ["T1218.011"],
+      "match": {
+        "any_text": ["rundll32.exe", "rundll32 "]
+      }
+    },
+    {
+      "id": "SOC-LOLBIN-003",
+      "title": "Regsvr32 execution",
+      "enabled": true,
+      "status": "candidate",
+      "score": 88,
+      "reason": "Regsvr32 proxy execution pattern detected",
+      "mitre": ["T1218.010"],
+      "match": {
+        "any_text": ["regsvr32.exe", "regsvr32 "]
+      }
+    },
+    {
+      "id": "SOC-LOLBIN-004",
+      "title": "Mshta execution",
+      "enabled": true,
+      "status": "candidate",
+      "score": 90,
+      "reason": "Mshta proxy execution pattern detected",
+      "mitre": ["T1218.005"],
+      "match": {
+        "any_text": ["mshta.exe", "mshta "]
+      }
+    },
+    {
+      "id": "SOC-LOLBIN-005",
+      "title": "BITSAdmin execution",
+      "enabled": true,
+      "status": "review",
+      "score": 76,
+      "reason": "BITSAdmin activity requires context review",
+      "mitre": ["T1197"],
+      "match": {
+        "any_text": ["bitsadmin.exe", "bitsadmin "]
+      }
+    },
+    {
+      "id": "SOC-DISCOVERY-001",
+      "title": "Burst of local discovery commands",
+      "enabled": true,
+      "status": "review",
+      "score": 70,
+      "reason": "System or account discovery command detected",
+      "mitre": ["T1033", "T1082", "T1087.001"],
+      "match": {
+        "any_text": ["whoami /all", "net user", "net localgroup administrators", "ipconfig /all", "tasklist"]
+      }
+    },
+    {
+      "id": "SOC-WAZUH-001",
+      "title": "High-signal Wazuh PowerShell rule",
+      "enabled": true,
+      "status": "candidate",
+      "score": 85,
+      "reason": "High-signal Wazuh or Sysmon rule matched",
+      "mitre": ["T1059.001"],
+      "match": {
+        "rule_ids": ["92021", "92027", "92066", "91816"]
+      }
+    }
+  ]
+}

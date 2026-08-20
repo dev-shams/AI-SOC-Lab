@@ -1,0 +1,18 @@
+{
+  "id": "INC-001",
+  "time": "Jul 14, 2026 @ 12:41:16.550",
+  "endpoint": "WIN11-SOC-ENDPOINT",
+  "agentId": "001",
+  "agentIp": "192.168.64.3",
+  "ruleId": "92027",
+  "ruleLevel": 4,
+  "ruleDescription": "Powershell process spawned powershell instance",
+  "source": "Microsoft-Windows-Sysmon/Operational",
+  "eventId": "1",
+  "mitre": {
+    "id": "T1059.001",
+    "tactic": "Execution",
+    "technique": "PowerShell"
+  },
+  "commandLine": "\"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -ExecutionPolicy Bypass -Command \"Write-Output 'WAZUH-POWERSHELL-TEST-002'; whoami; hostname\""
+}
