@@ -614,6 +614,41 @@ class SocHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
+    def serve_index(self):
+        """Serve index.html with mtime-stamped asset URLs.
+
+        no-store alone does not always beat a browser's in-memory cache, so an
+        edit to app.js can appear to do nothing until a manual hard refresh.
+        Stamping the URL with the file's mtime changes the request itself, which
+        no cache can serve stale. The file on disk keeps plain relative URLs, so
+        the static demo build is unaffected.
+        """
+        try:
+            html = (ROOT / "index.html").read_text(encoding="utf-8")
+            for asset in ("app.js", "styles.css"):
+                path = ROOT / asset
+                if path.exists():
+                    stamp = int(path.stat().st_mtime)
+                    html = html.replace(f"./{asset}", f"./{asset}?v={stamp}")
+            body = html.encode()
+        except OSError:
+            return False
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+        return True
+
+    def end_headers(self):
+        # This is a local development server. Browsers otherwise cache app.js
+        # and styles.css aggressively, so an edit appears to do nothing until a
+        # manual hard refresh — which silently wastes debugging time.
+        if not self.path.startswith("/api/"):
+            self.send_header("Cache-Control", "no-store, must-revalidate")
+        super().end_headers()
+
     def send_json(self, payload, status=200):
         data = json.dumps(payload).encode()
         self.send_response(status)
@@ -694,6 +729,9 @@ class SocHandler(SimpleHTTPRequestHandler):
                 self.send_json({"mode": "live", "events": [simplify_alert(hit) for hit in hits]})
             except Exception as error:
                 self.send_json({"mode": "demo", "error": str(error), "events": []}, status=502)
+            return
+
+        if parsed.path in ("/", "/index.html") and self.serve_index():
             return
 
         super().do_GET()

@@ -128,28 +128,142 @@ class EvidenceTests(unittest.TestCase):
 
 
 class FallbackTests(unittest.TestCase):
+    """Degradation when a backend is unavailable.
+
+    These pin SOC_AI_PROVIDER rather than relying on an absent API key. Since
+    Ollama became a supported backend, "no ANTHROPIC_API_KEY" no longer implies
+    template mode: on a machine with a local model running, auto correctly
+    resolves to ollama instead.
+    """
+
+    def setUp(self):
+        self._saved = {
+            key: os.environ.pop(key, None)
+            for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+        }
+        self._provider = ai.PROVIDER
+
+    def tearDown(self):
+        ai.PROVIDER = self._provider
+        for key, value in self._saved.items():
+            if value is not None:
+                os.environ[key] = value
+
     def test_analyze_falls_back_without_credentials(self):
-        saved = {key: os.environ.pop(key, None) for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}
+        ai.PROVIDER = "claude"
+        result = ai.analyze(encoded_alert(), [], "summary")
+        self.assertEqual(result["mode"], "template")
+        self.assertIn("ANTHROPIC_API_KEY", result["reason"])
+        self.assertTrue(result["text"].strip())
+
+    def test_status_reports_disabled_without_any_backend(self):
+        ai.PROVIDER = "template"
+        state = ai.status()
+        self.assertFalse(state["enabled"])
+        self.assertTrue(state["reason"])
+        self.assertEqual(state["provider"], "template")
+
+    def test_unreachable_ollama_degrades_to_template(self):
+        ai.PROVIDER = "ollama"
+        saved_url = ai.OLLAMA_URL
+        ai.OLLAMA_URL = "http://127.0.0.1:59999"  # nothing listens here
         try:
             result = ai.analyze(encoded_alert(), [], "summary")
             self.assertEqual(result["mode"], "template")
-            self.assertIn("ANTHROPIC_API_KEY", result["reason"])
             self.assertTrue(result["text"].strip())
         finally:
-            for key, value in saved.items():
-                if value is not None:
-                    os.environ[key] = value
+            ai.OLLAMA_URL = saved_url
 
-    def test_status_reports_disabled_without_credentials(self):
-        saved = {key: os.environ.pop(key, None) for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}
-        try:
-            state = ai.status()
-            self.assertFalse(state["enabled"])
-            self.assertTrue(state["reason"])
-        finally:
-            for key, value in saved.items():
-                if value is not None:
-                    os.environ[key] = value
+
+class ProviderTests(unittest.TestCase):
+    def setUp(self):
+        self._saved = {
+            key: os.environ.pop(key, None)
+            for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+        }
+        self._provider = ai.PROVIDER
+
+    def tearDown(self):
+        ai.PROVIDER = self._provider
+        for key, value in self._saved.items():
+            if value is not None:
+                os.environ[key] = value
+
+    def test_template_provider_is_honoured(self):
+        ai.PROVIDER = "template"
+        provider, _model, reason = ai.resolve_provider()
+        self.assertEqual(provider, "template")
+        self.assertTrue(reason)
+
+    def test_claude_provider_without_key_degrades_to_template(self):
+        ai.PROVIDER = "claude"
+        provider, _model, reason = ai.resolve_provider()
+        self.assertEqual(provider, "template")
+        self.assertIn("ANTHROPIC_API_KEY", reason)
+
+    def test_analyze_never_raises_for_any_provider(self):
+        alert = encoded_alert()
+        for provider in ("template", "claude", "ollama", "auto", "nonsense"):
+            with self.subTest(provider=provider):
+                ai.PROVIDER = provider
+                result = ai.analyze(alert, [], "summary")
+                self.assertIn(result["mode"], {"template", "claude", "ollama"})
+                self.assertTrue(result["text"].strip())
+
+
+class PromptShapingTests(unittest.TestCase):
+    def test_summary_keeps_the_output_contract(self):
+        prompt = ai._load_system_prompt("summary")
+        self.assertIn("Executive summary", prompt)
+
+    def test_other_tasks_drop_the_output_contract(self):
+        # A small model otherwise obeys the numbered section list in the system
+        # prompt and returns a summary when asked for a Sigma rule.
+        prompt = ai._load_system_prompt("detection")
+        self.assertNotIn("Executive summary", prompt)
+
+    def test_behavioural_rules_survive_stripping(self):
+        for task in ("summary", "detection", "mitre"):
+            with self.subTest(task=task):
+                prompt = ai._load_system_prompt(task).lower()
+                self.assertIn("do not invent facts", prompt)
+                self.assertIn("responsible for validation", prompt)
+
+    def test_strip_is_a_noop_without_a_contract(self):
+        text = "Just rules.\n\n- Do not invent facts."
+        self.assertEqual(ai._strip_output_contract(text), text)
+
+
+class CompactEvidenceTests(unittest.TestCase):
+    def test_compact_evidence_names_mitre_techniques(self):
+        # Bare IDs make small models invent names (T1027 came back as
+        # "Living off the Land"), so the names are supplied.
+        evidence = ai.build_evidence(encoded_alert(), [], compact=True)
+        self.assertIn("T1027 - Obfuscated Files or Information", evidence)
+        self.assertIn("T1059.001 - PowerShell", evidence)
+
+    def test_compact_evidence_has_no_raw_json_dump(self):
+        evidence = ai.build_evidence(encoded_alert(), [], compact=True)
+        self.assertNotIn('"triage":', evidence)
+        self.assertIn("Triage status: candidate", evidence)
+
+    def test_compact_evidence_keeps_the_decoded_payload(self):
+        evidence = ai.build_evidence(encoded_alert(), [], compact=True)
+        self.assertIn("SOC-LAB-ENCODED-001", evidence)
+
+    def test_detection_baseline_is_valid_sigma(self):
+        baseline = ai._detection_baseline(encoded_alert())
+        for key in ("logsource:", "detection:", "condition:", "level:"):
+            self.assertIn(key, baseline)
+        self.assertIn("data.win.system.eventID", baseline)
+
+    def test_detection_task_supplies_the_baseline(self):
+        content = ai._user_content(encoded_alert(), [], "detection", "", compact=True)
+        self.assertIn("Baseline detection generated from this alert", content)
+
+    def test_other_tasks_do_not_supply_a_baseline(self):
+        content = ai._user_content(encoded_alert(), [], "summary", "", compact=True)
+        self.assertNotIn("Baseline detection generated", content)
 
 
 if __name__ == "__main__":

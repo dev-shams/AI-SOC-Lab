@@ -973,12 +973,18 @@ function addMessage(kind, text, meta = "") {
 }
 
 function analysisMeta(payload) {
+  const usage = payload.usage || {};
+  const tokens = `${usage.inputTokens || 0} in / ${usage.outputTokens || 0} out`;
+
   if (payload.mode === "claude") {
-    const usage = payload.usage || {};
     const cost = Number(usage.costUsd || 0).toFixed(4);
-    return `${payload.model} · ${usage.inputTokens || 0} in / ${usage.outputTokens || 0} out · $${cost}`;
+    return `${payload.model} · ${tokens} · $${cost}`;
   }
-  return `Template mode — ${payload.reason || "Claude layer unavailable"}`;
+  if (payload.mode === "ollama") {
+    const seconds = usage.seconds ? ` · ${usage.seconds}s` : "";
+    return `${payload.model} (local) · ${tokens}${seconds} · free`;
+  }
+  return `Template mode — ${payload.reason || "no model backend reachable"}`;
 }
 
 async function requestAnalysis(task, question = "") {
@@ -1252,17 +1258,25 @@ async function loadHealth() {
   renderAiStatus();
 }
 
+const providerLabels = {
+  claude: "Claude API",
+  ollama: "Local model",
+  template: "Template mode",
+};
+
 function renderAiStatus() {
+  const provider = aiStatus.provider || (aiStatus.enabled ? "claude" : "template");
+  const label = providerLabels[provider] || provider;
   if (aiStatus.enabled) {
     aiModeText.textContent = `AI: ${aiStatus.model}`;
-    aiPanelPill.textContent = "Claude · evidence-bound";
-    brandMode.textContent = "Investigation console";
+    aiPanelPill.textContent = `${label} · evidence-bound`;
+    brandMode.textContent = provider === "ollama" ? "Local AI" : "Investigation console";
   } else {
     aiModeText.textContent = "AI: template mode";
     aiPanelPill.textContent = "Template mode";
     brandMode.textContent = "Template mode";
   }
-  aiModeText.title = aiStatus.reason || "Claude investigation assistant is active";
+  aiModeText.title = aiStatus.reason || `${label}${aiStatus.model ? ` (${aiStatus.model})` : ""}`;
 }
 
 addMessage(

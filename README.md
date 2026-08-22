@@ -97,42 +97,68 @@ Stop with `./scripts/stop-lab.sh` (preserves data volumes).
 
 ## The AI layer
 
-The investigation assistant runs on the Claude API. The system prompt is
-composed from [`AI-Layer/prompts/investigation-summary-prompt.md`](AI-Layer/prompts/investigation-summary-prompt.md),
+The investigation assistant runs a model over the selected alert. The system
+prompt is composed from [`AI-Layer/prompts/investigation-summary-prompt.md`](AI-Layer/prompts/investigation-summary-prompt.md),
 so the analyst-authored rules — separate fact from hypothesis, name missing
-evidence, never assert malice the logs do not support — are what actually
-govern the model.
+evidence, never assert malice the logs do not support — govern the model
+whichever backend serves the request.
 
 Each request sends only the normalized Wazuh alert plus its surrounding events.
 Base64 `-EncodedCommand` payloads are decoded server-side first, so the model
 reasons about the real command rather than an opaque blob.
 
-Five task types, plus free-form questions:
+### Three backends, one interface
 
-| Task | Produces |
-| --- | --- |
-| Summary | Shift-handover summary with a close/investigate/escalate call |
-| Timeline | Chronological table, with telemetry gaps marked |
-| MITRE | Technique mapping with the supporting evidence field per technique |
-| Response | Containment plan tagged Do Now / Do If Confirmed / Follow Up |
-| Detection | Complete Sigma rule and equivalent Wazuh DQL |
+Set `SOC_AI_PROVIDER` in `.env`. The default, `auto`, prefers Claude when a key
+exists, falls back to a local Ollama server, then to templates.
 
-**Cost.** Roughly a cent or two per investigation. Token counts and the exact
-dollar cost of every request are shown under each response, so nothing is
-hidden. Set the key in `.env`:
+| Provider | Cost | Setup | Quality |
+| --- | --- | --- | --- |
+| `ollama` | Free | `brew install ollama` + `ollama pull llama3.2:3b` | Good summaries; weaker on MITRE precision |
+| `claude` | ~5–10¢ per investigation | An API key | Best |
+| `template` | Free | None | Deterministic field interpolation, no analysis |
+
+`analyze()` never raises. Every failure — missing SDK, no credential, an
+unreachable Ollama server, a request error, or a Claude safety refusal —
+degrades to the next option down, and the console labels which one produced the
+output. That last case is real here, not theoretical: the evidence contains
+genuine attacker-style command lines, so `stop_reason: "refusal"` is handled
+explicitly rather than surfacing as an empty panel.
+
+### Running it free and offline
+
+The snapshot decouples the console from Wazuh, which frees the RAM a local model
+needs on an 8 GB machine:
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-...
+./scripts/stop-lab.sh                 # frees ~5GB
+brew services start ollama
+cd soc-ai-platform && .venv/bin/python server.py
 ```
 
-**Without a key the console still works.** It falls back to a deterministic
-template engine (`templates.py`) and labels itself "Template mode" in the
-sidebar so the output is never mistaken for model analysis. This also covers
-two other cases: a failed API request, and a safety refusal — the evidence
-contains genuine attacker-style command lines, so `stop_reason: "refusal"` is
-handled explicitly rather than surfacing as an empty panel.
+The console serves the frozen export of real alerts and runs analysis locally.
+A full investigation takes 20–45 seconds on an M1 and costs nothing.
 
----
+### Accommodating a small model
+
+Local 3B models needed three specific adjustments, each of which also made the
+Claude path better:
+
+1. **Compact evidence.** Small models lose the thread in nested JSON, so they
+   get labelled key/value lines instead.
+2. **Named techniques, not bare IDs.** Given `T1027` alone, the model invented
+   "Living off the Land". It now receives `T1027 - Obfuscated Files or
+   Information`.
+3. **Task-scoped system prompt.** The analyst prompt specifies a fixed six-section
+   summary format. A 3B model obeyed that over the actual instruction and
+   returned a summary when asked for a Sigma rule, so the section list is
+   dropped for non-summary tasks while the behavioural rules stay.
+
+The detection view also supplies the mechanically-generated Sigma rule for the
+model to critique rather than asking it to write YAML from memory — asked to
+author one, the 3B model invented schema fields that do not exist in Sigma.
+The model does the judgement (what would this miss, what fires falsely); the
+generator does the syntax.
 
 ## Generating telemetry
 
