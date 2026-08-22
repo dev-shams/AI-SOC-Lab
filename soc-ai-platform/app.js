@@ -148,6 +148,7 @@ const themeToggle = document.querySelector("#themeToggle");
 const workspaceSubtitle = document.querySelector("#workspaceSubtitle");
 const sectionHint = document.querySelector("#sectionHint");
 const needsAlertNav = document.querySelectorAll("[data-needs-alert]");
+const snapshotNote = document.querySelector("#snapshotNote");
 
 const sectionMeta = {
   overview: {
@@ -818,10 +819,14 @@ function emptyStateMarkup() {
     `;
   }
   if (alertMinutes <= 1440) {
+    const window = alertMinutes === 60 ? "hour" : alertMinutes === 360 ? "6 hours" : "24 hours";
+    const body = isSnapshotMode
+      ? `This is a saved copy of older alerts, so the last ${window} before it was captured is empty. Widen the time period to see the recorded activity.`
+      : `A quiet period is normal. Widen the time period to see older activity, or generate some test activity on the monitored computer.`;
     return `
-      <span class="empty-state-title">Nothing in the last ${alertMinutes === 60 ? "hour" : alertMinutes === 360 ? "6 hours" : "24 hours"}</span>
-      <span class="empty-state-body">A quiet period is normal. Widen the time period to see older activity, or generate some test activity on the monitored computer.</span>
-      <button class="secondary-button compact-button" type="button" data-empty-action="widen">Look back 30 days</button>
+      <span class="empty-state-title">Nothing in the last ${window}</span>
+      <span class="empty-state-body">${body}</span>
+      <button class="secondary-button compact-button" type="button" data-empty-action="widen">Widen to 90 days</button>
     `;
   }
   const other = currentProfile === "candidates" ? "review" : "raw";
@@ -845,8 +850,8 @@ function renderAlertTable() {
           alertSearchInput.value = "";
           renderAlertTable();
         } else if (action === "widen") {
-          alertMinutes = 43200;
-          alertTimeRange.value = "43200";
+          alertMinutes = 129600;
+          alertTimeRange.value = "129600";
           loadAlerts();
         } else if (action === "switch") {
           currentProfile = button.dataset.emptyProfile;
@@ -1147,6 +1152,47 @@ function selectAlert(alert) {
   loadContext(alert);
 }
 
+// The snapshot is a frozen export, so "last 24 hours" has to mean the 24
+// hours before the snapshot was captured. Measuring against the current clock
+// would make every window empty, since the data stops on the capture date.
+function snapshotReferenceMs(frozen) {
+  const captured = Date.parse(frozen?.generatedAt || "");
+  return Number.isNaN(captured) ? Date.now() : captured;
+}
+
+function withinWindow(alert, referenceMs, minutes) {
+  const stamp = Date.parse(alert.timestamp || alert.time || "");
+  if (Number.isNaN(stamp)) return true;
+  return stamp >= referenceMs - minutes * 60000;
+}
+
+function severityCountsOf(list) {
+  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  list.forEach((alert) => {
+    counts[severityFor(alert).key] += 1;
+  });
+  return counts;
+}
+
+function snapshotSummary(frozen, referenceMs) {
+  const within = (profile) =>
+    (frozen.queues?.[profile] || []).filter((alert) =>
+      withinWindow(alert, referenceMs, alertMinutes),
+    );
+  const raw = within("raw");
+  return {
+    raw: raw.length,
+    candidates: within("candidates").length,
+    review: within("review").length,
+    suppressed: within("noise").length,
+    severity: severityCountsOf(raw),
+    agents: {
+      active: new Set(raw.map((alert) => alert.agent?.name).filter(Boolean)).size,
+      disconnected: 0,
+    },
+  };
+}
+
 async function loadSnapshot() {
   if (snapshot) return snapshot;
   try {
@@ -1188,6 +1234,7 @@ async function loadAlerts() {
     if (!response.ok) throw new Error("Wazuh API unavailable");
     const payload = await response.json();
     isSnapshotMode = false;
+    snapshotNote.hidden = true;
     alertSummary = payload.summary || {};
     alerts = payload.alerts || [];
     selectedAlert = alerts[0] || emptyAlert;
@@ -1202,9 +1249,29 @@ async function loadAlerts() {
     // bundled sample alert.
     const frozen = await loadSnapshot();
     if (frozen) {
+      const firstLoad = !isSnapshotMode;
       isSnapshotMode = true;
-      alerts = frozen.queues?.[currentProfile] || [];
-      alertSummary = frozen.summary?.[currentProfile] || {};
+      const referenceMs = snapshotReferenceMs(frozen);
+
+      // On the first snapshot load, widen to a window that actually contains
+      // the frozen data, otherwise the console opens on an empty table.
+      if (firstLoad) {
+        const widest = Math.max(
+          ...[...alertTimeRange.options].map((option) => Number(option.value) || 0),
+        );
+        const hasDataNow = (frozen.queues?.[currentProfile] || []).some((alert) =>
+          withinWindow(alert, referenceMs, alertMinutes),
+        );
+        if (!hasDataNow) {
+          alertMinutes = widest;
+          alertTimeRange.value = String(widest);
+        }
+      }
+
+      alerts = (frozen.queues?.[currentProfile] || []).filter((alert) =>
+        withinWindow(alert, referenceMs, alertMinutes),
+      );
+      alertSummary = snapshotSummary(frozen, referenceMs);
       selectedAlert = alerts[0] || emptyAlert;
       const captured = frozen.generatedAt
         ? new Date(frozen.generatedAt).toLocaleDateString(undefined, {
@@ -1214,7 +1281,9 @@ async function loadAlerts() {
           })
         : "unknown date";
       dataModeLabel.textContent = "Snapshot";
-      dataModeText.textContent = `Real alerts frozen ${captured}`;
+      dataModeText.textContent = `Frozen ${captured}`;
+      snapshotNote.textContent = `Saved copy of real alerts from ${captured}. Time periods are measured back from that date, not from today.`;
+      snapshotNote.hidden = false;
       queueModePill.textContent = profileLabels[currentProfile] || "Alerts";
     } else {
       isSnapshotMode = false;

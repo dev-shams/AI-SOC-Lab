@@ -1877,3 +1877,13 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+
+/* Explains that a frozen snapshot's time periods run back from its capture
+   date, not from today — otherwise the filter looks broken. */
+.toolbar-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 4px;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
