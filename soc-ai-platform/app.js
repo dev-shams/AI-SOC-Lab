@@ -35,7 +35,7 @@ const emptyAlert = {
   rule: {
     id: "",
     level: 0,
-    description: "No incident candidates found",
+    description: "Nothing needs your attention right now",
     mitreId: "",
     mitreTactic: "",
     mitreTechnique: "",
@@ -45,13 +45,13 @@ const emptyAlert = {
     channel: "Wazuh alert triage",
     eventId: "",
     provider: "AI SOC",
-    message: "Wazuh is live, but the current alerts look like normal Windows startup/background noise or lower-priority review items.",
+    message: "Monitoring is working. The recent activity looks like normal Windows background behaviour, or is lower priority. Try a longer time period or another queue.",
   },
   process: {},
   triage: {
     status: "clear",
     score: 0,
-    reason: "No strong suspicious indicator matched in the focused queue",
+    reason: "Nothing suspicious matched in this queue",
   },
 };
 
@@ -70,10 +70,25 @@ let snapshot = null;
 let isSnapshotMode = false;
 
 const profileLabels = {
-  candidates: "Incident candidates",
-  review: "Needs review",
-  raw: "Raw Wazuh logs",
-  noise: "Suppressed noise",
+  candidates: "Needs investigation",
+  review: "Worth a look",
+  raw: "All alerts",
+  noise: "Filtered out",
+};
+
+// Shown on the triage pill in each row. The internal status names are jargon.
+const triageLabels = {
+  candidate: "Investigate",
+  review: "Review",
+  noise: "Filtered",
+  clear: "Nothing found",
+};
+
+const severityAdvice = {
+  critical: "Act immediately",
+  high: "Investigate today",
+  medium: "Worth checking",
+  low: "Usually routine",
 };
 
 const tableBody = document.querySelector("#alertTableBody");
@@ -129,37 +144,51 @@ const demoAnalyzeButton = document.querySelector("#demoAnalyzeButton");
 const aiModeText = document.querySelector("#aiModeText");
 const aiPanelPill = document.querySelector("#aiPanelPill");
 const brandMode = document.querySelector("#brandMode");
+const themeToggle = document.querySelector("#themeToggle");
+const workspaceSubtitle = document.querySelector("#workspaceSubtitle");
+const sectionHint = document.querySelector("#sectionHint");
+const needsAlertNav = document.querySelectorAll("[data-needs-alert]");
 
 const sectionMeta = {
   overview: {
-    eyebrow: "Overview",
-    title: "SOC Lab Overview",
-    status: "Live overview",
+    eyebrow: "Security operations",
+    title: "Overview",
+    status: "Live",
+    subtitle: "A summary of what is happening across the computers being monitored.",
   },
   alerts: {
     eyebrow: "Queue",
     title: "Alerts",
-    status: "Live queue",
+    status: "Live",
+    subtitle: "Security events sorted by how likely they are to need your attention.",
   },
   timeline: {
-    eyebrow: "Timeline",
-    title: "Investigation Timeline",
-    status: "Evidence view",
+    eyebrow: "Investigate",
+    title: "Investigation timeline",
+    status: "Evidence",
+    subtitle: "The sequence of events around the selected alert, in order.",
+    hint: "Built from the alert itself plus events recorded just before and after it.",
   },
   mitre: {
-    eyebrow: "MITRE ATT&CK",
-    title: "Technique Mapping",
+    eyebrow: "Investigate",
+    title: "Attack mapping",
     status: "Mapped",
+    subtitle: "How this behaviour matches known attacker techniques.",
+    hint: "MITRE ATT&CK is the industry catalogue of attacker techniques. A match describes what the activity resembles, not proof of an attack.",
   },
   detections: {
-    eyebrow: "Detection engineering",
-    title: "Detection Logic",
-    status: "Draft rule",
+    eyebrow: "Investigate",
+    title: "Detection rule",
+    status: "Draft",
+    subtitle: "A reusable rule so this behaviour is caught automatically next time.",
+    hint: "Sigma is a portable rule format other tools can import. The query below searches the alert store directly.",
   },
   report: {
-    eyebrow: "Incident report",
-    title: "Case Writeup",
+    eyebrow: "Investigate",
+    title: "Report",
     status: "Draft",
+    subtitle: "A written summary of the investigation, ready to copy.",
+    hint: "Use \"Copy report\" in the header to put the markdown on your clipboard.",
   },
 };
 
@@ -724,6 +753,7 @@ function renderSection(section = currentSection) {
   sectionEyebrow.textContent = meta.eyebrow;
   sectionTitle.textContent = meta.title;
   sectionStatus.textContent = meta.status;
+  sectionHint.textContent = meta.hint || "";
 
   if (section === "timeline") sectionBody.innerHTML = renderTimelineSection(selectedAlert);
   if (section === "mitre") sectionBody.innerHTML = renderMitreSection(selectedAlert);
@@ -731,7 +761,22 @@ function renderSection(section = currentSection) {
   if (section === "report") sectionBody.innerHTML = renderReportSection(selectedAlert);
 }
 
+function syncNavAvailability() {
+  needsAlertNav.forEach((item) => {
+    item.disabled = !isInvestigationOpen;
+    item.title = isInvestigationOpen
+      ? ""
+      : "Open an alert first — these views describe one selected alert";
+  });
+}
+
 function setSection(section) {
+  // The investigation views describe a selected alert. Without one they would
+  // render an empty shell, so send the user to the queue instead.
+  const meta = sectionMeta[section];
+  if (meta && !["overview", "alerts"].includes(section) && !isInvestigationOpen) {
+    section = "alerts";
+  }
   currentSection = section;
   workspace.dataset.section = section;
   document.body.dataset.section = section;
@@ -753,6 +798,7 @@ function syncInvestigationVisibility() {
   alertDetailPanels.forEach((panel) => {
     panel.hidden = !isInvestigationOpen;
   });
+  syncNavAvailability();
   const needsAlertSelection = currentSection === "alerts" && !isInvestigationOpen;
   copyReportButton.disabled = needsAlertSelection;
   demoAnalyzeButton.disabled = needsAlertSelection || isAnalyzing;
@@ -761,14 +807,53 @@ function syncInvestigationVisibility() {
   demoAnalyzeButton.title = needsAlertSelection ? "Select an alert to analyze it" : "Analyze the selected alert";
 }
 
+function emptyStateMarkup() {
+  // An empty queue is almost always one of three things, and saying which one
+  // saves a beginner from assuming the tool is broken.
+  if (alertSearchTerm.trim()) {
+    return `
+      <span class="empty-state-title">No alerts match "${escapeHtml(alertSearchTerm)}"</span>
+      <span class="empty-state-body">Try a shorter search, or clear it to see everything in this queue.</span>
+      <button class="secondary-button compact-button" type="button" data-empty-action="clear-search">Clear search</button>
+    `;
+  }
+  if (alertMinutes <= 1440) {
+    return `
+      <span class="empty-state-title">Nothing in the last ${alertMinutes === 60 ? "hour" : alertMinutes === 360 ? "6 hours" : "24 hours"}</span>
+      <span class="empty-state-body">A quiet period is normal. Widen the time period to see older activity, or generate some test activity on the monitored computer.</span>
+      <button class="secondary-button compact-button" type="button" data-empty-action="widen">Look back 30 days</button>
+    `;
+  }
+  const other = currentProfile === "candidates" ? "review" : "raw";
+  return `
+    <span class="empty-state-title">Nothing in "${escapeHtml(profileLabels[currentProfile] || currentProfile)}"</span>
+    <span class="empty-state-body">That is good news: nothing here needs your attention right now. Other queues may still have activity worth reviewing.</span>
+    <button class="secondary-button compact-button" type="button" data-empty-action="switch" data-empty-profile="${other}">Open "${escapeHtml(profileLabels[other])}"</button>
+  `;
+}
+
 function renderAlertTable() {
   tableBody.innerHTML = "";
   const visibleAlerts = filteredAlerts();
   if (!visibleAlerts.length) {
-    const message = alerts.length
-      ? "No alerts match the current search."
-      : `No alerts in ${profileLabels[currentProfile] || currentProfile}. Use another queue scope to inspect the rest of the Wazuh telemetry.`;
-    tableBody.innerHTML = `<tr class="empty-table-row"><td colspan="8">${escapeHtml(message)}</td></tr>`;
+    tableBody.innerHTML = `<tr class="empty-table-row"><td colspan="7">${emptyStateMarkup()}</td></tr>`;
+    tableBody.querySelectorAll("[data-empty-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.emptyAction;
+        if (action === "clear-search") {
+          alertSearchTerm = "";
+          alertSearchInput.value = "";
+          renderAlertTable();
+        } else if (action === "widen") {
+          alertMinutes = 43200;
+          alertTimeRange.value = "43200";
+          loadAlerts();
+        } else if (action === "switch") {
+          currentProfile = button.dataset.emptyProfile;
+          loadAlerts();
+        }
+      });
+    });
     return;
   }
   visibleAlerts.forEach((alert) => {
@@ -779,13 +864,12 @@ function renderAlertTable() {
     row.tabIndex = 0;
     row.innerHTML = `
       <td class="alert-time-cell">${escapeHtml(compactAlertTime(alert))}</td>
-      <td><span class="triage-pill ${escapeHtml(triageStatus)}">${escapeHtml(triageStatus)}</span></td>
-      <td><span class="alert-severity-pill ${severity.key}"><span aria-hidden="true"></span>${severity.label} · ${escapeHtml(alert.rule?.level ?? "0")}</span></td>
-      <td class="alert-rule-cell"><strong>${escapeHtml(alert.rule?.description || "No description")}</strong><small>${escapeHtml(alert.triage?.reason || alert.event?.channel || "Wazuh alert")}</small></td>
-      <td class="mono-cell">${escapeHtml(alert.rule?.id || "-")}</td>
+      <td><span class="triage-pill ${escapeHtml(triageStatus)}">${escapeHtml(triageLabels[triageStatus] || triageStatus)}</span></td>
+      <td><span class="alert-severity-pill ${severity.key}" title="Wazuh rule level ${escapeHtml(alert.rule?.level ?? 0)} — ${escapeHtml(severityAdvice[severity.key])}"><span aria-hidden="true"></span>${severity.label}</span></td>
+      <td class="alert-rule-cell"><strong>${escapeHtml(alert.rule?.description || "Security event")}</strong><small>${escapeHtml(alert.triage?.reason || alert.event?.channel || "Recorded by Wazuh")}</small></td>
       <td>${escapeHtml(endpoint(alert))}</td>
-      <td>${escapeHtml(alert.process?.user || "-")}</td>
-      <td class="mono-cell">${escapeHtml(alert.rule?.mitreId || "Unmapped")}</td>
+      <td>${escapeHtml(alert.process?.user || "Not recorded")}</td>
+      <td class="mono-cell" title="MITRE ATT&CK technique">${escapeHtml(alert.rule?.mitreId || "Not mapped")}</td>
     `;
     row.addEventListener("click", () => selectAlert(alert));
     row.addEventListener("keydown", (event) => {
@@ -848,16 +932,13 @@ function renderAlertInsights() {
 
 function renderMetrics() {
   quickMetrics.hidden = currentSection === "overview" || currentSection === "alerts";
-  workspaceEyebrow.textContent = currentSection === "overview"
-    ? "Security operations"
-    : currentSection === "alerts"
-      ? "Security / Alerts"
-      : "Investigation workspace";
-  caseTitle.textContent = currentSection === "overview"
-    ? "SOC Lab Overview"
-    : currentSection === "alerts"
-      ? "Security Alerts"
-      : selectedAlert.rule?.description || "Wazuh alert investigation";
+  const meta = sectionMeta[currentSection] || sectionMeta.alerts;
+  workspaceEyebrow.textContent = meta.eyebrow;
+  caseTitle.textContent = ["overview", "alerts"].includes(currentSection)
+    ? meta.title
+    : selectedAlert.rule?.description || meta.title;
+  workspaceSubtitle.textContent = meta.subtitle || "";
+  syncNavAvailability();
   openAlertsMetric.textContent = alertSummary.candidates ?? alerts.length;
   reviewAlertsMetric.textContent = alertSummary.review ?? "-";
   rawAlertsMetric.textContent = alertSummary.raw ?? "-";
@@ -928,26 +1009,27 @@ function renderOverview() {
 }
 
 function renderDetails() {
+  const severity = severityFor(selectedAlert);
+  const decoded = decodedPowerShellCommand(selectedAlert);
   const rows = [
-    ["Triage", `${selectedAlert.triage?.status || "review"} - ${selectedAlert.triage?.reason || "No reason"}`],
-    ["Policy rule", selectedAlert.triage?.policyRule
-      ? `${selectedAlert.triage.policyRule} - ${selectedAlert.triage.policyTitle || "Matched policy"}`
-      : "Default triage policy"],
-    ["Policy matches", selectedAlert.triage?.matches?.length
-      ? selectedAlert.triage.matches.map((match) => match.id).join(", ")
-      : "None"],
-    ["Rule ID", selectedAlert.rule?.id],
-    ["Description", selectedAlert.rule?.description],
-    ["Agent", `${endpoint(selectedAlert)} (${selectedAlert.agent?.ip || "no IP"})`],
-    ["User", selectedAlert.process?.user || "Unknown"],
-    ["Source", selectedAlert.event?.channel],
-    ["Event ID", selectedAlert.event?.eventId],
-    ["Image", selectedAlert.process?.image],
-    ["Parent", selectedAlert.process?.parentImage || "Unavailable"],
-    ["Command line", commandLine(selectedAlert)],
-    ["MITRE", mitreLabel(selectedAlert)],
-    ["Context loaded", surroundingEvents.length ? `${surroundingEvents.length} events` : "Not loaded"],
+    ["What happened", selectedAlert.rule?.description || "Security event"],
+    ["Why it was flagged", selectedAlert.triage?.reason || "Matched a monitoring rule"],
+    ["Priority", `${triageLabels[selectedAlert.triage?.status] || "Review"} · ${severity.label} (${severityAdvice[severity.key]})`],
+    ["Computer", `${endpoint(selectedAlert)}${selectedAlert.agent?.ip ? ` (${selectedAlert.agent.ip})` : ""}`],
+    ["User account", selectedAlert.process?.user || "Not recorded"],
+    ["Program that ran", selectedAlert.process?.image || "Not recorded"],
+    ["Started by", selectedAlert.process?.parentImage || "Not recorded"],
+    ["Full command", commandLine(selectedAlert)],
   ];
+  if (decoded) rows.push(["Hidden command, decoded", decoded]);
+  rows.push(
+    ["Attack technique", mitreLabel(selectedAlert)],
+    ["Nearby activity", surroundingEvents.length
+      ? `${surroundingEvents.length} other events around this time`
+      : "None loaded"],
+    ["Recorded in", selectedAlert.event?.channel || "Unknown log"],
+    ["Reference", `Wazuh rule ${selectedAlert.rule?.id || "?"}${selectedAlert.triage?.policyRule ? ` · policy ${selectedAlert.triage.policyRule}` : ""}`],
+  );
 
   details.innerHTML = rows
     .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || "Unavailable")}</dd>`)
@@ -1268,20 +1350,54 @@ function renderAiStatus() {
   const provider = aiStatus.provider || (aiStatus.enabled ? "claude" : "template");
   const label = providerLabels[provider] || provider;
   if (aiStatus.enabled) {
-    aiModeText.textContent = `AI: ${aiStatus.model}`;
-    aiPanelPill.textContent = `${label} · evidence-bound`;
-    brandMode.textContent = provider === "ollama" ? "Local AI" : "Investigation console";
+    aiModeText.textContent = `AI ready · ${aiStatus.model}`;
+    aiPanelPill.textContent = provider === "ollama" ? "Running on your Mac" : "Claude";
+    brandMode.textContent = provider === "ollama" ? "Local AI" : "Analyst console";
   } else {
-    aiModeText.textContent = "AI: template mode";
-    aiPanelPill.textContent = "Template mode";
-    brandMode.textContent = "Template mode";
+    aiModeText.textContent = "AI off · using templates";
+    aiPanelPill.textContent = "Templates only";
+    brandMode.textContent = "Analyst console";
   }
   aiModeText.title = aiStatus.reason || `${label}${aiStatus.model ? ` (${aiStatus.model})` : ""}`;
 }
 
+const THEME_KEY = "soc-console-theme";
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  themeToggle.setAttribute(
+    "aria-label",
+    theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
+  );
+}
+
+function initTheme() {
+  let stored = null;
+  try {
+    stored = localStorage.getItem(THEME_KEY);
+  } catch {
+    stored = null;
+  }
+  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+  applyTheme(stored || (prefersDark ? "dark" : "light"));
+}
+
+themeToggle.addEventListener("click", () => {
+  const next =
+    document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try {
+    localStorage.setItem(THEME_KEY, next);
+  } catch {
+    // Private browsing: the choice simply will not persist.
+  }
+});
+
+initTheme();
+
 addMessage(
   "ai",
-  "Select a Wazuh alert, then ask for a **summary**, **timeline**, **MITRE** mapping, **response** plan, or **detection** logic.",
+  "Pick an alert from the list, then use a button below or type a question. I only use evidence from the selected alert, and I will say so when something cannot be answered from it.",
 );
 loadHealth();
 loadAlerts();

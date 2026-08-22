@@ -8,29 +8,77 @@
   </head>
   <body data-section="overview">
     <a class="skip-link" href="#main">Skip to main content</a>
+
+    <!-- Icon sprite. Real SVG rather than emoji, one stroke family throughout. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <g id="i-overview"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></g>
+        <g id="i-alerts"><path d="M12 3a6 6 0 0 0-6 6c0 4-2 5-2 5h16s-2-1-2-5a6 6 0 0 0-6-6Z"/><path d="M10.5 20a1.8 1.8 0 0 0 3 0"/></g>
+        <g id="i-timeline"><path d="M5 4v16"/><circle cx="5" cy="8" r="1.6"/><circle cx="5" cy="16" r="1.6"/><path d="M9 8h10M9 16h7"/></g>
+        <g id="i-mitre"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></g>
+        <g id="i-detections"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="3.2"/><path d="m20.4 18.4 1.6 1.6"/></g>
+        <g id="i-report"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></g>
+        <g id="i-help"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.4v.4"/><path d="M12 17h.01"/></g>
+        <g id="i-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g>
+        <g id="i-moon"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></g>
+        <g id="i-shield"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="m9 12 2 2 4-4"/></g>
+        <g id="i-search"><circle cx="11" cy="11" r="7"/><path d="m16.2 16.2 4 4"/></g>
+        <g id="i-file"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></g>
+        <g id="i-target"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></g>
+        <g id="i-queue"><path d="M4 6h16M4 12h16M4 18h16"/></g>
+        <g id="i-stack"><path d="m12 3 8 4.5-8 4.5-8-4.5z"/><path d="m4 12 8 4.5 8-4.5"/><path d="m4 16.5 8 4.5 8-4.5"/></g>
+        <g id="i-endpoint"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></g>
+        <g id="i-archive"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11h14V8"/><path d="M10 12h4"/></g>
+        <g id="i-gear"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.5 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1.7a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 3.4 7.5a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-1.1V1.7a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.1a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.1Z"/></g>
+      </defs>
+    </svg>
+
     <div class="app-shell">
       <aside class="sidebar" aria-label="Primary">
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"></span>
           <div>
             <h1>AI SOC</h1>
-            <p id="brandMode">Investigation console</p>
+            <p id="brandMode">Analyst console</p>
           </div>
         </div>
+
         <nav class="nav-list" aria-label="Sections">
-          <button class="nav-item is-active" type="button" data-section="overview">Overview</button>
-          <button class="nav-item" type="button" data-section="alerts">Alerts</button>
-          <button class="nav-item" type="button" data-section="timeline">Timeline</button>
-          <button class="nav-item" type="button" data-section="mitre">MITRE</button>
-          <button class="nav-item" type="button" data-section="detections">Detections</button>
-          <button class="nav-item" type="button" data-section="report">Report</button>
+          <span class="nav-section-label">Monitor</span>
+          <button class="nav-item is-active" type="button" data-section="overview">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-overview"/></svg>
+            Overview
+          </button>
+          <button class="nav-item" type="button" data-section="alerts">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alerts"/></svg>
+            Alerts
+          </button>
+
+          <span class="nav-section-label">Investigate</span>
+          <button class="nav-item" type="button" data-section="timeline" data-needs-alert>
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-timeline"/></svg>
+            Timeline
+          </button>
+          <button class="nav-item" type="button" data-section="mitre" data-needs-alert>
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mitre"/></svg>
+            Attack mapping
+          </button>
+          <button class="nav-item" type="button" data-section="detections" data-needs-alert>
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-detections"/></svg>
+            Detection rule
+          </button>
+          <button class="nav-item" type="button" data-section="report" data-needs-alert>
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-report"/></svg>
+            Report
+          </button>
         </nav>
+
         <div class="mode-panel">
           <span class="status-dot" aria-hidden="true"></span>
           <div>
             <strong id="dataModeLabel">Connecting</strong>
-            <span id="dataModeText">Checking Wazuh</span>
-            <span id="aiModeText" class="ai-state">Checking AI layer</span>
+            <span id="dataModeText">Checking for alerts</span>
+            <span id="aiModeText" class="ai-state">Checking AI</span>
           </div>
         </div>
       </aside>
@@ -39,367 +87,430 @@
         <header class="topbar">
           <div>
             <p id="workspaceEyebrow" class="eyebrow">Security operations</p>
-            <h2 id="caseTitle">Loading Wazuh alerts</h2>
+            <h2 id="caseTitle">Loading alerts</h2>
+            <p id="workspaceSubtitle" class="topbar-subtitle"></p>
           </div>
           <div class="topbar-actions">
-            <button id="refreshAlertsButton" class="secondary-button" type="button">Refresh Alerts</button>
-            <button id="copyReportButton" class="secondary-button" type="button">Copy Report</button>
-            <button id="demoAnalyzeButton" class="primary-button" type="button">Analyze Alert</button>
+            <button id="themeToggle" class="icon-button theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme">
+              <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sun"/></svg>
+              <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-moon"/></svg>
+            </button>
+            <button id="refreshAlertsButton" class="secondary-button" type="button">Refresh</button>
+            <button id="copyReportButton" class="secondary-button" type="button">Copy report</button>
+            <button id="demoAnalyzeButton" class="primary-button" type="button">Analyze with AI</button>
           </div>
         </header>
 
-        <section class="metrics" aria-label="Alert summary metrics">
+        <section class="metrics" aria-label="Alert summary">
           <div class="metric">
-            <span class="metric-label">Candidate alerts</span>
+            <span class="metric-label">Needs investigation</span>
             <strong id="openAlertsMetric">0</strong>
+            <small>Most likely to matter</small>
           </div>
           <div class="metric">
-            <span class="metric-label">Review alerts</span>
+            <span class="metric-label">Worth a look</span>
             <strong id="reviewAlertsMetric">0</strong>
+            <small>Lower priority</small>
           </div>
           <div class="metric">
-            <span class="metric-label">Raw logs</span>
+            <span class="metric-label">All alerts</span>
             <strong id="rawAlertsMetric">0</strong>
+            <small>Everything collected</small>
           </div>
           <div class="metric">
-            <span class="metric-label">Suppressed noise</span>
+            <span class="metric-label">Filtered out</span>
             <strong id="suppressedAlertsMetric">0</strong>
+            <small>Normal Windows noise</small>
           </div>
         </section>
 
+        <!-- ============================ OVERVIEW ============================ -->
         <section id="overviewView" class="view-panel is-active" data-view="overview">
-          <section class="overview-grid" aria-label="SOC overview">
+          <section class="how-it-works" aria-labelledby="how-heading">
+            <div class="how-it-works-intro">
+              <div>
+                <h3 id="how-heading">New here? Investigate your first alert in four steps</h3>
+                <p>This console collects Windows security events, sorts them by how suspicious they look, and helps you write up what happened.</p>
+              </div>
+              <button class="mini-button" type="button" data-overview-profile="candidates">Start with step 1</button>
+            </div>
+            <div class="how-step">
+              <span class="how-step-number">1</span>
+              <div>
+                <strong>Pick an alert</strong>
+                <span>Open <em>Alerts</em> and click any row in "Needs investigation".</span>
+              </div>
+            </div>
+            <div class="how-step">
+              <span class="how-step-number">2</span>
+              <div>
+                <strong>Read the evidence</strong>
+                <span>See what ran, which user, and what happened around it.</span>
+              </div>
+            </div>
+            <div class="how-step">
+              <span class="how-step-number">3</span>
+              <div>
+                <strong>Ask the AI</strong>
+                <span>Get a summary, timeline, attack mapping, or response plan.</span>
+              </div>
+            </div>
+            <div class="how-step">
+              <span class="how-step-number">4</span>
+              <div>
+                <strong>Write it up</strong>
+                <span>Open <em>Report</em> and copy the finished markdown.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="overview-grid" aria-label="Overview">
             <section class="panel agents-overview-panel" aria-labelledby="agents-overview-heading">
-              <div class="overview-section-label">Agents summary</div>
+              <div class="overview-section-label">Monitored computers</div>
+              <h3 id="agents-overview-heading" class="sr-only">Monitored computers</h3>
               <div class="agents-overview-content">
                 <div class="agent-ring" aria-hidden="true"></div>
                 <dl class="agent-status-list">
                   <div>
-                    <dt><span class="legend-dot active" aria-hidden="true"></span>Active</dt>
+                    <dt><span class="legend-dot active" aria-hidden="true"></span>Reporting in</dt>
                     <dd id="overviewActiveAgents">0</dd>
                   </div>
                   <div>
-                    <dt><span class="legend-dot disconnected" aria-hidden="true"></span>Disconnected</dt>
+                    <dt><span class="legend-dot disconnected" aria-hidden="true"></span>Not reporting</dt>
                     <dd id="overviewDisconnectedAgents">0</dd>
                   </div>
                 </dl>
               </div>
-              <h3 id="agents-overview-heading" class="sr-only">Agents summary</h3>
             </section>
 
             <section class="panel severity-overview-panel" aria-labelledby="severity-overview-heading">
-              <div class="overview-section-label">Last 24 hours alerts</div>
-              <h3 id="severity-overview-heading" class="sr-only">Last 24 hours alert severity</h3>
+              <div class="overview-section-label">How serious are the alerts?</div>
+              <h3 id="severity-overview-heading" class="sr-only">Alert severity breakdown</h3>
               <div class="severity-overview-grid">
                 <div class="severity-tile critical">
-                  <span>Critical severity</span>
+                  <span>Critical</span>
                   <strong id="overviewCriticalAlerts">0</strong>
-                  <small>Rule level 15 or higher</small>
+                  <small>Act immediately</small>
                 </div>
                 <div class="severity-tile high">
-                  <span>High severity</span>
+                  <span>High</span>
                   <strong id="overviewHighAlerts">0</strong>
-                  <small>Rule level 12 to 14</small>
+                  <small>Investigate today</small>
                 </div>
                 <div class="severity-tile medium">
-                  <span>Medium severity</span>
+                  <span>Medium</span>
                   <strong id="overviewMediumAlerts">0</strong>
-                  <small>Rule level 7 to 11</small>
+                  <small>Worth checking</small>
                 </div>
                 <div class="severity-tile low">
-                  <span>Low severity</span>
+                  <span>Low</span>
                   <strong id="overviewLowAlerts">0</strong>
-                  <small>Rule level 0 to 6</small>
+                  <small>Usually routine</small>
                 </div>
               </div>
-            </section>
-
-            <section class="panel overview-category-panel" aria-labelledby="endpoint-security-heading">
-              <div class="overview-section-label">Endpoint security</div>
-              <div class="overview-card-grid">
-                <button class="overview-card" type="button" data-overview-profile="review">
-                  <span class="overview-icon gear" aria-hidden="true"></span>
-                  <strong>Configuration Assessment</strong>
-                  <span>Review endpoint posture and Wazuh assessment findings.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-profile="candidates">
-                  <span class="overview-icon telemetry" aria-hidden="true"></span>
-                  <strong>Sysmon Telemetry</strong>
-                  <span>Inspect process creation, PowerShell, and account activity.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-profile="raw">
-                  <span class="overview-icon file" aria-hidden="true"></span>
-                  <strong>Raw Logs</strong>
-                  <span>Open normalized Wazuh events for evidence review.</span>
-                </button>
-              </div>
-              <h3 id="endpoint-security-heading" class="sr-only">Endpoint security</h3>
-            </section>
-
-            <section class="panel overview-category-panel" aria-labelledby="threat-intelligence-heading">
-              <div class="overview-section-label">Threat intelligence</div>
-              <div class="overview-card-grid">
-                <button class="overview-card" type="button" data-overview-section="alerts">
-                  <span class="overview-icon hunt" aria-hidden="true"></span>
-                  <strong>Threat Hunting</strong>
-                  <span>Search candidate and review alerts from the lab endpoint.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-section="mitre">
-                  <span class="overview-icon target" aria-hidden="true"></span>
-                  <strong>MITRE ATT&amp;CK</strong>
-                  <span>Map selected alert behavior to tactics and techniques.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-section="detections">
-                  <span class="overview-icon rule" aria-hidden="true"></span>
-                  <strong>Detection Logic</strong>
-                  <span>Generate Wazuh DQL and Sigma-style detection drafts.</span>
-                </button>
-              </div>
-              <h3 id="threat-intelligence-heading" class="sr-only">Threat intelligence</h3>
-            </section>
-
-            <section class="panel overview-category-panel" aria-labelledby="security-operations-heading">
-              <div class="overview-section-label">Security operations</div>
-              <div class="overview-card-grid">
-                <button class="overview-card" type="button" data-overview-profile="candidates">
-                  <span class="overview-icon queue" aria-hidden="true"></span>
-                  <strong>Investigation Queue</strong>
-                  <span>Start with alerts promoted by the triage layer.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-section="timeline">
-                  <span class="overview-icon timeline" aria-hidden="true"></span>
-                  <strong>Timeline Builder</strong>
-                  <span>Build a structured view of activity around an alert.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-section="report">
-                  <span class="overview-icon report" aria-hidden="true"></span>
-                  <strong>Incident Report</strong>
-                  <span>Draft the final investigation writeup for GitHub.</span>
-                </button>
-              </div>
-              <h3 id="security-operations-heading" class="sr-only">Security operations</h3>
-            </section>
-
-            <section class="panel overview-category-panel" aria-labelledby="lab-integrations-heading">
-              <div class="overview-section-label">Lab integrations</div>
-              <div class="overview-card-grid">
-                <button class="overview-card" type="button" data-overview-profile="raw">
-                  <span class="overview-icon stack" aria-hidden="true"></span>
-                  <strong>Wazuh Stack</strong>
-                  <span>Pull live alerts from the local Wazuh indexer API.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-section="alerts">
-                  <span class="overview-icon endpoint" aria-hidden="true"></span>
-                  <strong>Windows Endpoint</strong>
-                  <span>Monitor the active Windows VM agent and Sysmon stream.</span>
-                </button>
-                <button class="overview-card" type="button" data-overview-section="report">
-                  <span class="overview-icon archive" aria-hidden="true"></span>
-                  <strong>GitHub Writeup</strong>
-                  <span>Package evidence, lessons learned, and detection rules.</span>
-                </button>
-              </div>
-              <h3 id="lab-integrations-heading" class="sr-only">Lab integrations</h3>
             </section>
 
             <section class="panel recent-overview-panel" aria-labelledby="recent-overview-heading">
               <div class="panel-header">
                 <div>
-                  <p class="eyebrow">Live queue</p>
-                  <h3 id="recent-overview-heading">Recent candidates</h3>
+                  <p class="eyebrow">Start here</p>
+                  <h3 id="recent-overview-heading">Alerts needing investigation</h3>
+                  <p class="panel-hint">Click any alert to open it and see the full evidence.</p>
                 </div>
-                <button class="mini-button" type="button" data-overview-section="alerts">Open queue</button>
+                <button class="mini-button" type="button" data-overview-section="alerts">See all</button>
               </div>
               <div id="overviewRecentList" class="recent-list"></div>
             </section>
+
+            <section class="panel overview-category-panel" aria-labelledby="endpoint-security-heading">
+              <div class="overview-section-label">What is being watched</div>
+              <h3 id="endpoint-security-heading" class="sr-only">What is being watched</h3>
+              <div class="overview-card-grid">
+                <button class="overview-card" type="button" data-overview-profile="candidates">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-shield"/></svg></span>
+                  <span>
+                    <strong>Program activity</strong>
+                    <span>Which programs ran, and what commands they used.</span>
+                  </span>
+                </button>
+                <button class="overview-card" type="button" data-overview-profile="raw">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-file"/></svg></span>
+                  <span>
+                    <strong>All collected events</strong>
+                    <span>The full log stream, before any filtering.</span>
+                  </span>
+                </button>
+                <button class="overview-card" type="button" data-overview-profile="noise">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-gear"/></svg></span>
+                  <span>
+                    <strong>Filtered-out noise</strong>
+                    <span>Routine Windows activity hidden to reduce clutter.</span>
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel overview-category-panel" aria-labelledby="investigate-heading">
+              <div class="overview-section-label">Investigation tools</div>
+              <h3 id="investigate-heading" class="sr-only">Investigation tools</h3>
+              <div class="overview-card-grid">
+                <button class="overview-card" type="button" data-overview-section="alerts">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-search"/></svg></span>
+                  <span>
+                    <strong>Search alerts</strong>
+                    <span>Find activity by computer, user, or command.</span>
+                  </span>
+                </button>
+                <button class="overview-card" type="button" data-overview-section="mitre">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-target"/></svg></span>
+                  <span>
+                    <strong>Attack mapping</strong>
+                    <span>Match behaviour to known attacker techniques.</span>
+                  </span>
+                </button>
+                <button class="overview-card" type="button" data-overview-section="detections">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-detections"/></svg></span>
+                  <span>
+                    <strong>Detection rule</strong>
+                    <span>Turn this alert into a reusable rule.</span>
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel overview-category-panel" aria-labelledby="lab-heading">
+              <div class="overview-section-label">Where the data comes from</div>
+              <h3 id="lab-heading" class="sr-only">Where the data comes from</h3>
+              <div class="overview-card-grid">
+                <button class="overview-card" type="button" data-overview-profile="raw">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-stack"/></svg></span>
+                  <span>
+                    <strong>Wazuh</strong>
+                    <span>The security monitoring system storing the alerts.</span>
+                  </span>
+                </button>
+                <button class="overview-card" type="button" data-overview-section="alerts">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-endpoint"/></svg></span>
+                  <span>
+                    <strong>Windows computer</strong>
+                    <span>The monitored machine sending in events.</span>
+                  </span>
+                </button>
+                <button class="overview-card" type="button" data-overview-section="report">
+                  <span class="overview-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-archive"/></svg></span>
+                  <span>
+                    <strong>Write-up</strong>
+                    <span>Package the evidence and findings into a report.</span>
+                  </span>
+                </button>
+              </div>
+            </section>
           </section>
         </section>
 
+        <!-- ============================== ALERTS ============================== -->
         <section id="alertsView" class="view-panel" data-view="alerts" hidden>
-        <section class="alerts-workbench" aria-label="Security alerts workbench">
-          <section class="panel alert-toolbar" aria-label="Alert search and filters">
-            <div class="alert-search-field">
-              <label for="alertSearchInput">Search alerts</label>
-              <input id="alertSearchInput" type="search" autocomplete="off" placeholder="Search rule, host, user, command line, or MITRE technique">
-            </div>
-            <div class="alert-filter-field">
-              <label for="alertTimeRange">Time range</label>
-              <select id="alertTimeRange">
-                <option value="60">Last hour</option>
-                <option value="360">Last 6 hours</option>
-                <option value="1440" selected>Last 24 hours</option>
-                <option value="10080">Last 7 days</option>
-                <option value="43200">Last 30 days</option>
-                <option value="129600">Last 90 days</option>
-              </select>
-            </div>
-            <button id="clearAlertFilters" class="secondary-button compact-button" type="button">Clear filters</button>
-          </section>
-
-          <section class="alert-insights" aria-label="Alert intelligence summary">
-            <section class="alert-insight-panel severity-insight" aria-labelledby="severity-insight-heading">
-              <div class="insight-heading">
-                <div>
-                  <p class="eyebrow">Distribution</p>
-                  <h3 id="severity-insight-heading">Severity levels</h3>
-                </div>
-                <strong id="alertTotalCount">0 alerts</strong>
+          <section class="alerts-workbench" aria-label="Alerts">
+            <section class="panel alert-toolbar" aria-label="Search and filter">
+              <div class="alert-search-field">
+                <label for="alertSearchInput">Search</label>
+                <input id="alertSearchInput" type="search" autocomplete="off" placeholder="Try a computer name, user, or command like &quot;powershell&quot;">
               </div>
-              <div class="alert-severity-summary" aria-label="Alert severity summary">
-                <div class="alert-severity-stat critical">
-                  <span class="severity-marker" aria-hidden="true"></span>
-                  <span>Critical</span>
-                  <strong id="alertCriticalCount">0</strong>
-                  <small>Level 15+</small>
-                </div>
-                <div class="alert-severity-stat high">
-                  <span class="severity-marker" aria-hidden="true"></span>
-                  <span>High</span>
-                  <strong id="alertHighCount">0</strong>
-                  <small>Level 12-14</small>
-                </div>
-                <div class="alert-severity-stat medium">
-                  <span class="severity-marker" aria-hidden="true"></span>
-                  <span>Medium</span>
-                  <strong id="alertMediumCount">0</strong>
-                  <small>Level 7-11</small>
-                </div>
-                <div class="alert-severity-stat low">
-                  <span class="severity-marker" aria-hidden="true"></span>
-                  <span>Low</span>
-                  <strong id="alertLowCount">0</strong>
-                  <small>Level 0-6</small>
-                </div>
+              <div class="alert-filter-field">
+                <label for="alertTimeRange">Time period</label>
+                <select id="alertTimeRange">
+                  <option value="60">Last hour</option>
+                  <option value="360">Last 6 hours</option>
+                  <option value="1440" selected>Last 24 hours</option>
+                  <option value="10080">Last 7 days</option>
+                  <option value="43200">Last 30 days</option>
+                  <option value="129600">Last 90 days</option>
+                </select>
               </div>
+              <button id="clearAlertFilters" class="secondary-button compact-button" type="button">Reset</button>
             </section>
 
-            <section class="alert-insight-panel" aria-labelledby="rules-insight-heading">
-              <div class="insight-heading">
-                <div>
-                  <p class="eyebrow">Frequency</p>
-                  <h3 id="rules-insight-heading">Top rules</h3>
+            <section class="alert-insights" aria-label="Alert summary">
+              <section class="alert-insight-panel severity-insight" aria-labelledby="severity-insight-heading">
+                <div class="insight-heading">
+                  <div>
+                    <p class="eyebrow">Breakdown</p>
+                    <h3 id="severity-insight-heading">How serious</h3>
+                  </div>
+                  <strong id="alertTotalCount">0 alerts</strong>
                 </div>
-                <span>Current queue</span>
-              </div>
-              <div id="topRulesList" class="insight-list"></div>
+                <div class="alert-severity-summary">
+                  <div class="alert-severity-stat critical">
+                    <span class="severity-marker" aria-hidden="true"></span>
+                    <span>Critical</span>
+                    <strong id="alertCriticalCount">0</strong>
+                    <small>Act immediately</small>
+                  </div>
+                  <div class="alert-severity-stat high">
+                    <span class="severity-marker" aria-hidden="true"></span>
+                    <span>High</span>
+                    <strong id="alertHighCount">0</strong>
+                    <small>Investigate today</small>
+                  </div>
+                  <div class="alert-severity-stat medium">
+                    <span class="severity-marker" aria-hidden="true"></span>
+                    <span>Medium</span>
+                    <strong id="alertMediumCount">0</strong>
+                    <small>Worth checking</small>
+                  </div>
+                  <div class="alert-severity-stat low">
+                    <span class="severity-marker" aria-hidden="true"></span>
+                    <span>Low</span>
+                    <strong id="alertLowCount">0</strong>
+                    <small>Usually routine</small>
+                  </div>
+                </div>
+              </section>
+
+              <section class="alert-insight-panel" aria-labelledby="rules-insight-heading">
+                <div class="insight-heading">
+                  <div>
+                    <p class="eyebrow">Most common</p>
+                    <h3 id="rules-insight-heading">What is triggering</h3>
+                  </div>
+                </div>
+                <div id="topRulesList" class="insight-list"></div>
+              </section>
+
+              <section class="alert-insight-panel" aria-labelledby="endpoints-insight-heading">
+                <div class="insight-heading">
+                  <div>
+                    <p class="eyebrow">Most active</p>
+                    <h3 id="endpoints-insight-heading">Which computers</h3>
+                  </div>
+                </div>
+                <div id="topEndpointsList" class="insight-list"></div>
+              </section>
             </section>
 
-            <section class="alert-insight-panel" aria-labelledby="endpoints-insight-heading">
-              <div class="insight-heading">
-                <div>
-                  <p class="eyebrow">Assets</p>
-                  <h3 id="endpoints-insight-heading">Top endpoints</h3>
+            <section class="content-grid alerts-content-grid">
+              <section class="panel alert-panel" aria-labelledby="alerts-heading">
+                <div class="panel-header">
+                  <div>
+                    <p class="eyebrow">Queue</p>
+                    <h3 id="alerts-heading">Alerts</h3>
+                    <p class="panel-hint">Click any row to open the full evidence and the AI assistant.</p>
+                  </div>
+                  <span id="queueModePill" class="pill">Loading</span>
                 </div>
-                <span>Current queue</span>
-              </div>
-              <div id="topEndpointsList" class="insight-list"></div>
+
+                <div class="queue-tabs" role="group" aria-label="Filter by priority">
+                  <button class="queue-tab is-active" type="button" data-profile="candidates">
+                    <strong>Needs investigation</strong>
+                    <small>Most likely to matter</small>
+                  </button>
+                  <button class="queue-tab" type="button" data-profile="review">
+                    <strong>Worth a look</strong>
+                    <small>Lower priority</small>
+                  </button>
+                  <button class="queue-tab" type="button" data-profile="raw">
+                    <strong>All alerts</strong>
+                    <small>Nothing filtered</small>
+                  </button>
+                  <button class="queue-tab" type="button" data-profile="noise">
+                    <strong>Filtered out</strong>
+                    <small>Routine noise</small>
+                  </button>
+                </div>
+
+                <div class="table-wrap">
+                  <table class="alert-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">When</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Severity</th>
+                        <th scope="col">What happened</th>
+                        <th scope="col">Computer</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Technique</th>
+                      </tr>
+                    </thead>
+                    <tbody id="alertTableBody"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section id="alertDetailsPanel" class="panel details-panel" aria-labelledby="details-heading" data-alert-detail hidden>
+                <div class="panel-header">
+                  <div>
+                    <p class="eyebrow">Evidence</p>
+                    <h3 id="details-heading">What we know</h3>
+                  </div>
+                  <div class="panel-header-actions">
+                    <span id="severityBadge" class="severity-badge">Level 4</span>
+                    <button id="closeAlertInvestigation" class="icon-button" type="button" aria-label="Close this alert" title="Close this alert">&times;</button>
+                  </div>
+                </div>
+                <dl id="alertDetails" class="details-list"></dl>
+              </section>
+
+              <section class="panel ai-panel" aria-labelledby="ai-heading" data-alert-detail hidden>
+                <div class="panel-header">
+                  <div>
+                    <p class="eyebrow">AI assistant</p>
+                    <h3 id="ai-heading">Ask about this alert</h3>
+                    <p class="panel-hint">Answers use only this alert's evidence. Always verify before acting.</p>
+                  </div>
+                  <span id="aiPanelPill" class="pill">Checking</span>
+                </div>
+                <div id="chatLog" class="chat-log" aria-live="polite"></div>
+                <div class="prompt-row" aria-label="Suggested questions">
+                  <button type="button" data-prompt="summary">What happened?</button>
+                  <button type="button" data-prompt="timeline">Build a timeline</button>
+                  <button type="button" data-prompt="mitre">Map the attack</button>
+                  <button type="button" data-prompt="response">What should I do?</button>
+                  <button type="button" data-prompt="detection">Write a rule</button>
+                </div>
+                <form id="chatForm" class="chat-form">
+                  <label for="chatInput">Or ask your own question</label>
+                  <div class="input-row">
+                    <input id="chatInput" name="chatInput" type="text" autocomplete="off" placeholder="e.g. Is this dangerous? Who ran it?">
+                    <button type="submit">Ask</button>
+                  </div>
+                </form>
+              </section>
+
+              <section class="panel raw-panel" aria-labelledby="raw-heading" data-alert-detail hidden>
+                <div class="panel-header">
+                  <div>
+                    <p class="eyebrow">Advanced</p>
+                    <h3 id="raw-heading">Raw event data</h3>
+                    <p class="panel-hint">The complete record, exactly as stored. Useful as proof in a report.</p>
+                  </div>
+                  <span class="pill">JSON</span>
+                </div>
+                <pre id="rawEventOutput" tabindex="0"></pre>
+              </section>
+
+              <section class="panel artifact-panel" aria-labelledby="artifact-heading" data-alert-detail hidden>
+                <div class="panel-header">
+                  <div>
+                    <p class="eyebrow">Output</p>
+                    <h3 id="artifact-heading">Ready to copy</h3>
+                    <p class="panel-hint">Use "Copy report" above to put this on your clipboard.</p>
+                  </div>
+                  <span id="artifactStatus" class="pill">Ready</span>
+                </div>
+                <pre id="artifactOutput" tabindex="0"></pre>
+              </section>
             </section>
           </section>
-
-        <section class="content-grid alerts-content-grid">
-          <section class="panel alert-panel" aria-labelledby="alerts-heading">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Queue</p>
-                <h3 id="alerts-heading">Alerts</h3>
-              </div>
-              <span id="queueModePill" class="pill">Connecting</span>
-            </div>
-            <div class="queue-tabs" aria-label="Queue scope">
-              <button class="queue-tab is-active" type="button" data-profile="candidates">Candidates</button>
-              <button class="queue-tab" type="button" data-profile="review">Review</button>
-              <button class="queue-tab" type="button" data-profile="raw">Raw logs</button>
-              <button class="queue-tab" type="button" data-profile="noise">Suppressed</button>
-            </div>
-            <div class="table-wrap">
-              <table class="alert-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Time</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Severity</th>
-                    <th scope="col">Rule</th>
-                    <th scope="col">Rule ID</th>
-                    <th scope="col">Host</th>
-                    <th scope="col">User</th>
-                    <th scope="col">MITRE</th>
-                  </tr>
-                </thead>
-                <tbody id="alertTableBody"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section id="alertDetailsPanel" class="panel details-panel" aria-labelledby="details-heading" data-alert-detail hidden>
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Evidence</p>
-                <h3 id="details-heading">Alert Details</h3>
-              </div>
-              <div class="panel-header-actions">
-                <span id="severityBadge" class="severity-badge">Level 4</span>
-                <button id="closeAlertInvestigation" class="icon-button" type="button" aria-label="Close selected alert details" title="Close selected alert details">&times;</button>
-              </div>
-            </div>
-            <dl id="alertDetails" class="details-list"></dl>
-          </section>
-
-          <section class="panel raw-panel" aria-labelledby="raw-heading" data-alert-detail hidden>
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Raw log</p>
-                <h3 id="raw-heading">Selected Event JSON</h3>
-              </div>
-              <span class="pill">Normalized</span>
-            </div>
-            <pre id="rawEventOutput" tabindex="0"></pre>
-          </section>
-
-          <section class="panel ai-panel" aria-labelledby="ai-heading" data-alert-detail hidden>
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">AI analyst</p>
-                <h3 id="ai-heading">Investigation Assistant</h3>
-              </div>
-              <span id="aiPanelPill" class="pill">Evidence-bound</span>
-            </div>
-            <div id="chatLog" class="chat-log" aria-live="polite"></div>
-            <div class="prompt-row" aria-label="Suggested prompts">
-              <button type="button" data-prompt="summary">Summary</button>
-              <button type="button" data-prompt="timeline">Timeline</button>
-              <button type="button" data-prompt="mitre">MITRE</button>
-              <button type="button" data-prompt="response">Response</button>
-              <button type="button" data-prompt="detection">Detection</button>
-            </div>
-            <form id="chatForm" class="chat-form">
-              <label for="chatInput">Ask about this alert</label>
-              <div class="input-row">
-                <input id="chatInput" name="chatInput" type="text" autocomplete="off" placeholder="Ask for a timeline, MITRE mapping, response plan...">
-                <button type="submit">Send</button>
-              </div>
-            </form>
-          </section>
-
-          <section class="panel artifact-panel" aria-labelledby="artifact-heading" data-alert-detail hidden>
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Analyst output</p>
-                <h3 id="artifact-heading">Generated Artifact</h3>
-              </div>
-              <span id="artifactStatus" class="pill">Ready</span>
-            </div>
-            <pre id="artifactOutput" tabindex="0"></pre>
-          </section>
-        </section>
-        </section>
         </section>
 
+        <!-- ============================ ANALYSIS ============================ -->
         <section id="analysisView" class="view-panel" data-view="analysis" hidden>
           <section class="panel section-output-panel" aria-labelledby="sectionTitle">
             <div class="panel-header section-output-header">
               <div>
                 <p id="sectionEyebrow" class="eyebrow">Timeline</p>
-                <h3 id="sectionTitle">Investigation Timeline</h3>
+                <h3 id="sectionTitle">Investigation timeline</h3>
+                <p id="sectionHint" class="panel-hint"></p>
               </div>
               <span id="sectionStatus" class="pill">Generated</span>
             </div>
