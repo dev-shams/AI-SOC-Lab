@@ -1887,3 +1887,280 @@ pre {
   color: var(--text-3);
   font-size: 12.5px;
 }
+
+/* ============================================================================
+   Investigation drawer
+   Alert detail opens over the queue instead of stacking beneath it, so the
+   table stays readable and the investigation gets the full height of the
+   window.
+   ========================================================================== */
+
+body.drawer-open {
+  overflow: hidden;
+}
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawer[hidden] {
+  display: none;
+}
+
+.drawer-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 15, 24, 0.5);
+  animation: drawer-fade 160ms ease;
+}
+
+.drawer-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(940px, 100%);
+  height: 100%;
+  border-left: 1px solid var(--line);
+  background: var(--bg);
+  box-shadow: var(--shadow-lg);
+  animation: drawer-slide 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes drawer-fade {
+  from { opacity: 0; }
+}
+
+@keyframes drawer-slide {
+  from { transform: translateX(24px); opacity: 0.6; }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.drawer-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+
+.drawer-heading h2 {
+  font-size: 18px;
+  font-weight: 680;
+  line-height: 1.3;
+}
+
+.drawer-subtitle {
+  margin-top: 3px;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
+.drawer-close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-strong);
+  font-size: 20px;
+}
+
+.drawer-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  scrollbar-width: none;
+}
+
+.drawer-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.drawer-tab {
+  flex: none;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.drawer-tab:hover {
+  color: var(--text);
+}
+
+.drawer-tab.is-active {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+}
+
+.drawer-body {
+  flex: 1;
+  min-height: 0;
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.drawer-tabpanel {
+  display: none;
+}
+
+.drawer-tabpanel.is-active {
+  display: block;
+  animation: drawer-fade 140ms ease;
+}
+
+.drawer-tab-hint {
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-left: 2px solid var(--primary);
+  background: var(--surface-2);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+
+.drawer-hint {
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.drawer-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* The drawer supplies the surrounding chrome, so inner blocks stay flat. */
+.drawer-tabpanel .chat-log {
+  height: auto;
+  min-height: 320px;
+  max-height: 46vh;
+}
+
+.drawer-tabpanel .details-list {
+  font-size: 13.5px;
+}
+
+.drawer-tabpanel > pre {
+  max-height: 60vh;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  border-radius: var(--r-md);
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------- collapsible values ---- */
+
+.long-value summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.long-value summary::-webkit-details-marker {
+  display: none;
+}
+
+.long-value-more {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.long-value[open] summary {
+  color: var(--text-3);
+}
+
+.long-value pre {
+  max-height: 320px;
+  margin: 8px 0 0;
+  padding: 12px;
+  overflow: auto;
+  border-radius: var(--r-md);
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.artifact-details {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.artifact-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.artifact-details pre {
+  max-height: 300px;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  background: var(--code-bg);
+  color: var(--code-text);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .drawer-panel {
+    width: 100%;
+    border-left: 0;
+  }
+  .drawer-body {
+    padding: 14px;
+  }
+}

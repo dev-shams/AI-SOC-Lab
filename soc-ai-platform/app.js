@@ -108,17 +108,21 @@ const reviewAlertsMetric = document.querySelector("#reviewAlertsMetric");
 const rawAlertsMetric = document.querySelector("#rawAlertsMetric");
 const suppressedAlertsMetric = document.querySelector("#suppressedAlertsMetric");
 const quickMetrics = document.querySelector(".metrics");
-const severityBadge = document.querySelector("#severityBadge");
 const queueModePill = document.querySelector("#queueModePill");
 const queueTabs = document.querySelectorAll("[data-profile]");
 const navItems = document.querySelectorAll(".nav-item[data-section]");
 const overviewView = document.querySelector("#overviewView");
 const alertsView = document.querySelector("#alertsView");
-const analysisView = document.querySelector("#analysisView");
-const sectionEyebrow = document.querySelector("#sectionEyebrow");
-const sectionTitle = document.querySelector("#sectionTitle");
-const sectionStatus = document.querySelector("#sectionStatus");
-const sectionBody = document.querySelector("#sectionBody");
+const drawer = document.querySelector("#alertDrawer");
+const drawerTitle = document.querySelector("#drawerTitle");
+const drawerSubtitle = document.querySelector("#drawerSubtitle");
+const drawerTriage = document.querySelector("#drawerTriage");
+const drawerSeverity = document.querySelector("#drawerSeverity");
+const drawerHint = document.querySelector("#drawerHint");
+const drawerTabs = document.querySelectorAll(".drawer-tab");
+const drawerPanels = document.querySelectorAll(".drawer-tabpanel");
+const evidenceNote = document.querySelector("#evidenceNote");
+const evidenceNoteText = document.querySelector("#evidenceNoteText");
 const overviewActiveAgents = document.querySelector("#overviewActiveAgents");
 const overviewDisconnectedAgents = document.querySelector("#overviewDisconnectedAgents");
 const overviewCriticalAlerts = document.querySelector("#overviewCriticalAlerts");
@@ -137,17 +141,14 @@ const alertLowCount = document.querySelector("#alertLowCount");
 const alertTotalCount = document.querySelector("#alertTotalCount");
 const topRulesList = document.querySelector("#topRulesList");
 const topEndpointsList = document.querySelector("#topEndpointsList");
-const alertDetailPanels = document.querySelectorAll("[data-alert-detail]");
-const closeAlertInvestigation = document.querySelector("#closeAlertInvestigation");
+
 const copyReportButton = document.querySelector("#copyReportButton");
 const demoAnalyzeButton = document.querySelector("#demoAnalyzeButton");
 const aiModeText = document.querySelector("#aiModeText");
-const aiPanelPill = document.querySelector("#aiPanelPill");
 const brandMode = document.querySelector("#brandMode");
 const themeToggle = document.querySelector("#themeToggle");
 const workspaceSubtitle = document.querySelector("#workspaceSubtitle");
-const sectionHint = document.querySelector("#sectionHint");
-const needsAlertNav = document.querySelectorAll("[data-needs-alert]");
+let currentTab = "evidence";
 const snapshotNote = document.querySelector("#snapshotNote");
 
 const sectionMeta = {
@@ -189,7 +190,7 @@ const sectionMeta = {
     title: "Report",
     status: "Draft",
     subtitle: "A written summary of the investigation, ready to copy.",
-    hint: "Use \"Copy report\" in the header to put the markdown on your clipboard.",
+    hint: "Use \"Copy report\" at the bottom of this panel to put the markdown on your clipboard.",
   },
 };
 
@@ -546,7 +547,7 @@ Wazuh generated an alert on ${endpoint(alert)}. The alert matched rule ${alert.r
 ## Command Or Event Text
 
 \`\`\`text
-${commandLine(alert)}
+${excerpt(commandLine(alert))}
 \`\`\`
 ${decodedSection}
 
@@ -623,7 +624,7 @@ tags:
 ${tags.map((id) => `  - attack.${String(id).toLowerCase()}`).join("\n")}
 
 # Evidence command line:
-# ${command}`;
+# ${excerpt(command, 400).replace(/\n/g, "\n# ")}`;
 }
 
 function fieldBlock(label, value) {
@@ -686,7 +687,7 @@ function renderTimelineSection(alert) {
         <span class="timeline-dot"></span>
         <div>
           <h4>Command line captured</h4>
-          <p>${escapeHtml(commandLine(alert))}</p>
+          <p>${longValue(commandLine(alert))}</p>
         </div>
       </li>
       ${decodedTimelineItem}
@@ -748,36 +749,64 @@ function renderReportSection(alert) {
   `;
 }
 
-function renderSection(section = currentSection) {
-  const meta = sectionMeta[section] || sectionMeta.alerts;
-  if (section === "alerts" || section === "overview") return;
-  sectionEyebrow.textContent = meta.eyebrow;
-  sectionTitle.textContent = meta.title;
-  sectionStatus.textContent = meta.status;
-  sectionHint.textContent = meta.hint || "";
+const tabRenderers = {
+  timeline: renderTimelineSection,
+  mitre: renderMitreSection,
+  detections: renderDetectionsSection,
+  report: renderReportSection,
+};
 
-  if (section === "timeline") sectionBody.innerHTML = renderTimelineSection(selectedAlert);
-  if (section === "mitre") sectionBody.innerHTML = renderMitreSection(selectedAlert);
-  if (section === "detections") sectionBody.innerHTML = renderDetectionsSection(selectedAlert);
-  if (section === "report") sectionBody.innerHTML = renderReportSection(selectedAlert);
+function renderSection(tab = currentTab) {
+  const renderer = tabRenderers[tab];
+  if (!renderer) return;
+  const panel = document.querySelector(`.drawer-tabpanel[data-panel="${tab}"] [data-section-body]`);
+  if (!panel) return;
+  const meta = sectionMeta[tab];
+  const hint = meta?.hint ? `<p class="panel-hint drawer-tab-hint">${escapeHtml(meta.hint)}</p>` : "";
+  panel.innerHTML = hint + renderer(selectedAlert);
 }
 
-function syncNavAvailability() {
-  needsAlertNav.forEach((item) => {
-    item.disabled = !isInvestigationOpen;
-    item.title = isInvestigationOpen
-      ? ""
-      : "Open an alert first — these views describe one selected alert";
+function setDrawerTab(tab) {
+  currentTab = tab;
+  drawerTabs.forEach((button) => {
+    const active = button.dataset.tab === tab;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", String(active));
   });
+  drawerPanels.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.panel === tab);
+  });
+  renderSection(tab);
+}
+
+function openDrawer() {
+  const severity = severityFor(selectedAlert);
+  const status = selectedAlert.triage?.status || "review";
+  drawerTitle.textContent = selectedAlert.rule?.description || "Security event";
+  drawerSubtitle.textContent = `${compactAlertTime(selectedAlert)} · ${endpoint(selectedAlert)} · ${selectedAlert.process?.user || "user not recorded"}`;
+  drawerTriage.textContent = triageLabels[status] || status;
+  drawerTriage.className = `triage-pill ${status}`;
+  drawerSeverity.innerHTML = `<span aria-hidden="true"></span>${severity.label}`;
+  drawerSeverity.className = `alert-severity-pill ${severity.key}`;
+  drawerSeverity.title = `Wazuh rule level ${selectedAlert.rule?.level ?? 0} — ${severityAdvice[severity.key]}`;
+  drawer.hidden = false;
+  document.body.classList.add("drawer-open");
+  setDrawerTab("evidence");
+  drawer.querySelector(".drawer-close")?.focus();
+}
+
+function closeDrawer() {
+  isInvestigationOpen = false;
+  drawer.hidden = true;
+  document.body.classList.remove("drawer-open");
+  renderAlertTable();
+  renderMetrics();
 }
 
 function setSection(section) {
-  // The investigation views describe a selected alert. Without one they would
-  // render an empty shell, so send the user to the queue instead.
-  const meta = sectionMeta[section];
-  if (meta && !["overview", "alerts"].includes(section) && !isInvestigationOpen) {
-    section = "alerts";
-  }
+  // Timeline / attack mapping / detection / report are per-alert drawer tabs
+  // now, so any legacy link to them just opens the queue.
+  if (!["overview", "alerts"].includes(section)) section = "alerts";
   currentSection = section;
   workspace.dataset.section = section;
   document.body.dataset.section = section;
@@ -786,26 +815,21 @@ function setSection(section) {
   const isAlerts = section === "alerts";
   overviewView.hidden = !isOverview;
   alertsView.hidden = !isAlerts;
-  analysisView.hidden = isOverview || isAlerts;
+
   overviewView.classList.toggle("is-active", isOverview);
   alertsView.classList.toggle("is-active", isAlerts);
-  analysisView.classList.toggle("is-active", !isOverview && !isAlerts);
+
   renderMetrics();
   if (isOverview) renderOverview();
-  if (!isOverview && !isAlerts) renderSection(section);
 }
 
 function syncInvestigationVisibility() {
-  alertDetailPanels.forEach((panel) => {
-    panel.hidden = !isInvestigationOpen;
-  });
-  syncNavAvailability();
-  const needsAlertSelection = currentSection === "alerts" && !isInvestigationOpen;
-  copyReportButton.disabled = needsAlertSelection;
-  demoAnalyzeButton.disabled = needsAlertSelection || isAnalyzing;
-  demoAnalyzeButton.textContent = isAnalyzing ? "Analyzing…" : "Analyze Alert";
-  copyReportButton.title = needsAlertSelection ? "Select an alert to copy its report" : "Copy the selected alert report";
-  demoAnalyzeButton.title = needsAlertSelection ? "Select an alert to analyze it" : "Analyze the selected alert";
+  copyReportButton.disabled = !isInvestigationOpen;
+  demoAnalyzeButton.disabled = !isInvestigationOpen || isAnalyzing;
+  demoAnalyzeButton.textContent = isAnalyzing ? "Analyzing…" : "Analyze with AI";
+  drawerHint.textContent = aiStatus.enabled
+    ? `AI: ${aiStatus.model}`
+    : "AI unavailable — showing template output";
 }
 
 function emptyStateMarkup() {
@@ -943,12 +967,10 @@ function renderMetrics() {
     ? meta.title
     : selectedAlert.rule?.description || meta.title;
   workspaceSubtitle.textContent = meta.subtitle || "";
-  syncNavAvailability();
   openAlertsMetric.textContent = alertSummary.candidates ?? alerts.length;
   reviewAlertsMetric.textContent = alertSummary.review ?? "-";
   rawAlertsMetric.textContent = alertSummary.raw ?? "-";
   suppressedAlertsMetric.textContent = alertSummary.suppressed ?? "-";
-  severityBadge.textContent = `Level ${selectedAlert.rule?.level ?? "-"}`;
   queueModePill.textContent = `${profileLabels[currentProfile] || "Alerts"} · ${alerts.length}`;
   const severity = alertSummary.severity || {};
   alertCriticalCount.textContent = severity.critical ?? 0;
@@ -1013,6 +1035,28 @@ function renderOverview() {
   });
 }
 
+// Some command lines are enormous — the worst in this lab is a 16,000-character
+// PowerShell script block. Rendered whole it pushes the panel off the page, so
+// long values collapse behind a toggle.
+const LONG_VALUE_LIMIT = 400;
+const TEXT_EXCERPT_LIMIT = 1200;
+
+function excerpt(value, limit = TEXT_EXCERPT_LIMIT) {
+  const text = String(value ?? "");
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit)}\n\n… [truncated — ${text.length.toLocaleString()} characters total]`;
+}
+
+function longValue(value) {
+  if (value.length <= LONG_VALUE_LIMIT) return escapeHtml(value);
+  return `
+    <details class="long-value">
+      <summary>${escapeHtml(value.slice(0, LONG_VALUE_LIMIT))}<span class="long-value-more">… show all ${value.length.toLocaleString()} characters</span></summary>
+      <pre>${escapeHtml(value)}</pre>
+    </details>
+  `;
+}
+
 function renderDetails() {
   const severity = severityFor(selectedAlert);
   const decoded = decodedPowerShellCommand(selectedAlert);
@@ -1036,9 +1080,25 @@ function renderDetails() {
     ["Reference", `Wazuh rule ${selectedAlert.rule?.id || "?"}${selectedAlert.triage?.policyRule ? ` · policy ${selectedAlert.triage.policyRule}` : ""}`],
   );
 
-  details.innerHTML = rows
-    .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || "Unavailable")}</dd>`)
+  // Different event types populate different fields; a 4104 script-block event
+  // has no process image or parent, for example. Empty rows are dropped and
+  // summarised in a note instead of printing a column of "Not recorded".
+  const present = rows.filter(([, value]) => {
+    const text = String(value ?? "").trim();
+    return text && text !== "Not recorded" && text !== "Unavailable";
+  });
+  const missing = rows.length - present.length;
+
+  details.innerHTML = present
+    .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${longValue(String(value))}</dd>`)
     .join("");
+
+  if (missing > 0) {
+    evidenceNoteText.textContent = `${missing} field${missing === 1 ? " is" : "s are"} not captured by this type of event, so ${missing === 1 ? "it is" : "they are"} hidden.`;
+    evidenceNote.hidden = false;
+  } else {
+    evidenceNote.hidden = true;
+  }
 }
 
 function renderRawEvent() {
@@ -1143,12 +1203,11 @@ function selectAlert(alert) {
   isInvestigationOpen = true;
   surroundingEvents = [];
   renderMetrics();
-  renderOverview();
   renderAlertTable();
   renderDetails();
   renderRawEvent();
   setArtifact("Summary", artifactTemplates(selectedAlert).summary);
-  renderSection();
+  openDrawer();
   loadContext(alert);
 }
 
@@ -1374,6 +1433,18 @@ copyReportButton.addEventListener("click", async () => {
 
 document.querySelector("#refreshAlertsButton").addEventListener("click", loadAlerts);
 
+drawerTabs.forEach((button) => {
+  button.addEventListener("click", () => setDrawerTab(button.dataset.tab));
+});
+
+document.querySelectorAll("[data-drawer-close]").forEach((element) => {
+  element.addEventListener("click", closeDrawer);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !drawer.hidden) closeDrawer();
+});
+
 alertSearchInput.addEventListener("input", (event) => {
   alertSearchTerm = event.target.value;
   renderAlertTable();
@@ -1390,12 +1461,6 @@ clearAlertFilters.addEventListener("click", () => {
   alertSearchInput.value = "";
   alertTimeRange.value = "1440";
   loadAlerts();
-});
-
-closeAlertInvestigation.addEventListener("click", () => {
-  isInvestigationOpen = false;
-  renderMetrics();
-  renderAlertTable();
 });
 
 async function loadHealth() {
@@ -1420,13 +1485,12 @@ function renderAiStatus() {
   const label = providerLabels[provider] || provider;
   if (aiStatus.enabled) {
     aiModeText.textContent = `AI ready · ${aiStatus.model}`;
-    aiPanelPill.textContent = provider === "ollama" ? "Running on your Mac" : "Claude";
     brandMode.textContent = provider === "ollama" ? "Local AI" : "Analyst console";
   } else {
     aiModeText.textContent = "AI off · using templates";
-    aiPanelPill.textContent = "Templates only";
     brandMode.textContent = "Analyst console";
   }
+  syncInvestigationVisibility();
   aiModeText.title = aiStatus.reason || `${label}${aiStatus.model ? ` (${aiStatus.model})` : ""}`;
 }
 

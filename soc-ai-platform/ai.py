@@ -31,6 +31,7 @@ Design notes:
 """
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -50,6 +51,12 @@ OLLAMA_MODEL = os.getenv("SOC_AI_OLLAMA_MODEL", "llama3.2:3b")
 # Local generation on a small model is slow; this is a ceiling, not a target.
 OLLAMA_TIMEOUT = int(os.getenv("SOC_AI_OLLAMA_TIMEOUT", "300"))
 OLLAMA_NUM_CTX = int(os.getenv("SOC_AI_OLLAMA_NUM_CTX", "8192"))
+# Availability probe. A cold or memory-pressured Ollama can take several
+# seconds to answer even /api/tags, and a probe that gives up too early makes
+# the console report "AI unavailable" while the model is in fact working.
+OLLAMA_PROBE_TIMEOUT = int(os.getenv("SOC_AI_OLLAMA_PROBE_TIMEOUT", "12"))
+OLLAMA_PROBE_TTL = 30
+_OLLAMA_PROBE_CACHE = {"at": 0.0, "models": None}
 
 PROMPT_PATH = Path(
     os.getenv(
@@ -186,15 +193,30 @@ def _claude_ready():
     return True, ""
 
 
-def _ollama_models():
-    """Return the list of models the local Ollama server has pulled."""
+def _ollama_models(force=False):
+    """Return the models the local Ollama server has pulled, or None.
+
+    Successful probes are cached briefly so a single slow response cannot flip
+    the console between "AI ready" and "AI unavailable" between page loads.
+    """
+    now = time.monotonic()
+    if (
+        not force
+        and _OLLAMA_PROBE_CACHE["models"] is not None
+        and now - _OLLAMA_PROBE_CACHE["at"] < OLLAMA_PROBE_TTL
+    ):
+        return _OLLAMA_PROBE_CACHE["models"]
+
     try:
         request = urllib.request.Request(f"{OLLAMA_URL}/api/tags")
-        with urllib.request.urlopen(request, timeout=3) as response:
+        with urllib.request.urlopen(request, timeout=OLLAMA_PROBE_TIMEOUT) as response:
             payload = json.loads(response.read().decode())
-        return [model.get("name", "") for model in payload.get("models", [])]
+        models = [model.get("name", "") for model in payload.get("models", [])]
     except (urllib.error.URLError, OSError, ValueError, TimeoutError):
         return None
+
+    _OLLAMA_PROBE_CACHE.update({"at": now, "models": models})
+    return models
 
 
 def _ollama_ready():

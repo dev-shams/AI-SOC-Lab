@@ -54,23 +54,6 @@
             Alerts
           </button>
 
-          <span class="nav-section-label">Investigate</span>
-          <button class="nav-item" type="button" data-section="timeline" data-needs-alert>
-            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-timeline"/></svg>
-            Timeline
-          </button>
-          <button class="nav-item" type="button" data-section="mitre" data-needs-alert>
-            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mitre"/></svg>
-            Attack mapping
-          </button>
-          <button class="nav-item" type="button" data-section="detections" data-needs-alert>
-            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-detections"/></svg>
-            Detection rule
-          </button>
-          <button class="nav-item" type="button" data-section="report" data-needs-alert>
-            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-report"/></svg>
-            Report
-          </button>
         </nav>
 
         <div class="mode-panel">
@@ -95,9 +78,7 @@
               <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sun"/></svg>
               <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-moon"/></svg>
             </button>
-            <button id="refreshAlertsButton" class="secondary-button" type="button">Refresh</button>
-            <button id="copyReportButton" class="secondary-button" type="button">Copy report</button>
-            <button id="demoAnalyzeButton" class="primary-button" type="button">Analyze with AI</button>
+            <button id="refreshAlertsButton" class="primary-button" type="button">Refresh</button>
           </div>
         </header>
 
@@ -437,88 +418,93 @@
                 </div>
               </section>
 
-              <section id="alertDetailsPanel" class="panel details-panel" aria-labelledby="details-heading" data-alert-detail hidden>
-                <div class="panel-header">
-                  <div>
-                    <p class="eyebrow">Evidence</p>
-                    <h3 id="details-heading">What we know</h3>
-                  </div>
-                  <div class="panel-header-actions">
-                    <span id="severityBadge" class="severity-badge">Level 4</span>
-                    <button id="closeAlertInvestigation" class="icon-button" type="button" aria-label="Close this alert" title="Close this alert">&times;</button>
-                  </div>
-                </div>
-                <dl id="alertDetails" class="details-list"></dl>
-              </section>
-
-              <section class="panel ai-panel" aria-labelledby="ai-heading" data-alert-detail hidden>
-                <div class="panel-header">
-                  <div>
-                    <p class="eyebrow">AI assistant</p>
-                    <h3 id="ai-heading">Ask about this alert</h3>
-                    <p class="panel-hint">Answers use only this alert's evidence. Always verify before acting.</p>
-                  </div>
-                  <span id="aiPanelPill" class="pill">Checking</span>
-                </div>
-                <div id="chatLog" class="chat-log" aria-live="polite"></div>
-                <div class="prompt-row" aria-label="Suggested questions">
-                  <button type="button" data-prompt="summary">What happened?</button>
-                  <button type="button" data-prompt="timeline">Build a timeline</button>
-                  <button type="button" data-prompt="mitre">Map the attack</button>
-                  <button type="button" data-prompt="response">What should I do?</button>
-                  <button type="button" data-prompt="detection">Write a rule</button>
-                </div>
-                <form id="chatForm" class="chat-form">
-                  <label for="chatInput">Or ask your own question</label>
-                  <div class="input-row">
-                    <input id="chatInput" name="chatInput" type="text" autocomplete="off" placeholder="e.g. Is this dangerous? Who ran it?">
-                    <button type="submit">Ask</button>
-                  </div>
-                </form>
-              </section>
-
-              <section class="panel raw-panel" aria-labelledby="raw-heading" data-alert-detail hidden>
-                <div class="panel-header">
-                  <div>
-                    <p class="eyebrow">Advanced</p>
-                    <h3 id="raw-heading">Raw event data</h3>
-                    <p class="panel-hint">The complete record, exactly as stored. Useful as proof in a report.</p>
-                  </div>
-                  <span class="pill">JSON</span>
-                </div>
-                <pre id="rawEventOutput" tabindex="0"></pre>
-              </section>
-
-              <section class="panel artifact-panel" aria-labelledby="artifact-heading" data-alert-detail hidden>
-                <div class="panel-header">
-                  <div>
-                    <p class="eyebrow">Output</p>
-                    <h3 id="artifact-heading">Ready to copy</h3>
-                    <p class="panel-hint">Use "Copy report" above to put this on your clipboard.</p>
-                  </div>
-                  <span id="artifactStatus" class="pill">Ready</span>
-                </div>
-                <pre id="artifactOutput" tabindex="0"></pre>
-              </section>
             </section>
           </section>
         </section>
 
         <!-- ============================ ANALYSIS ============================ -->
-        <section id="analysisView" class="view-panel" data-view="analysis" hidden>
-          <section class="panel section-output-panel" aria-labelledby="sectionTitle">
-            <div class="panel-header section-output-header">
-              <div>
-                <p id="sectionEyebrow" class="eyebrow">Timeline</p>
-                <h3 id="sectionTitle">Investigation timeline</h3>
-                <p id="sectionHint" class="panel-hint"></p>
-              </div>
-              <span id="sectionStatus" class="pill">Generated</span>
-            </div>
-            <div id="sectionBody" class="section-body"></div>
-          </section>
+
         </section>
       </main>
+    </div>
+
+    <!-- Slide-over investigation drawer. Keeps the alert queue clean: details
+         open over the page instead of stacking underneath it. -->
+    <div id="alertDrawer" class="drawer" hidden>
+      <div class="drawer-scrim" data-drawer-close></div>
+      <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+        <header class="drawer-header">
+          <div class="drawer-heading">
+            <div class="drawer-pills">
+              <span id="drawerTriage" class="triage-pill"></span>
+              <span id="drawerSeverity" class="alert-severity-pill"><span aria-hidden="true"></span></span>
+            </div>
+            <h2 id="drawerTitle">Alert</h2>
+            <p id="drawerSubtitle" class="drawer-subtitle"></p>
+          </div>
+          <button class="icon-button drawer-close" type="button" data-drawer-close aria-label="Close investigation">&times;</button>
+        </header>
+
+        <nav class="drawer-tabs" role="tablist" aria-label="Investigation views">
+          <button class="drawer-tab is-active" type="button" role="tab" data-tab="evidence">Evidence</button>
+          <button class="drawer-tab" type="button" role="tab" data-tab="ai">AI assistant</button>
+          <button class="drawer-tab" type="button" role="tab" data-tab="timeline">Timeline</button>
+          <button class="drawer-tab" type="button" role="tab" data-tab="mitre">Attack mapping</button>
+          <button class="drawer-tab" type="button" role="tab" data-tab="detections">Detection rule</button>
+          <button class="drawer-tab" type="button" role="tab" data-tab="report">Report</button>
+          <button class="drawer-tab" type="button" role="tab" data-tab="raw">Raw data</button>
+        </nav>
+
+        <div class="drawer-body">
+          <section class="drawer-tabpanel is-active" data-panel="evidence">
+            <dl id="alertDetails" class="details-list"></dl>
+            <p id="evidenceNote" class="help-note" hidden>
+              <svg class="help-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-help"/></svg>
+              <span id="evidenceNoteText"></span>
+            </p>
+          </section>
+
+          <section class="drawer-tabpanel" data-panel="ai">
+            <div id="chatLog" class="chat-log" aria-live="polite"></div>
+            <div class="prompt-row" aria-label="Suggested questions">
+              <button type="button" data-prompt="summary">What happened?</button>
+              <button type="button" data-prompt="timeline">Build a timeline</button>
+              <button type="button" data-prompt="mitre">Map the attack</button>
+              <button type="button" data-prompt="response">What should I do?</button>
+              <button type="button" data-prompt="detection">Write a rule</button>
+            </div>
+            <form id="chatForm" class="chat-form">
+              <label for="chatInput">Or ask your own question</label>
+              <div class="input-row">
+                <input id="chatInput" name="chatInput" type="text" autocomplete="off" placeholder="e.g. Is this dangerous? Who ran it?">
+                <button type="submit">Ask</button>
+              </div>
+            </form>
+            <details class="artifact-details">
+              <summary>Latest generated output <span id="artifactStatus" class="pill">Ready</span></summary>
+              <pre id="artifactOutput" tabindex="0"></pre>
+            </details>
+          </section>
+
+          <section class="drawer-tabpanel" data-panel="timeline"><div class="section-body" data-section-body></div></section>
+          <section class="drawer-tabpanel" data-panel="mitre"><div class="section-body" data-section-body></div></section>
+          <section class="drawer-tabpanel" data-panel="detections"><div class="section-body" data-section-body></div></section>
+          <section class="drawer-tabpanel" data-panel="report"><div class="section-body" data-section-body></div></section>
+
+          <section class="drawer-tabpanel" data-panel="raw">
+            <p class="panel-hint">The complete record, exactly as stored. Useful as proof in a report.</p>
+            <pre id="rawEventOutput" tabindex="0"></pre>
+          </section>
+        </div>
+
+        <footer class="drawer-footer">
+          <span id="drawerHint" class="drawer-hint"></span>
+          <div class="drawer-actions">
+            <button id="copyReportButton" class="secondary-button" type="button">Copy report</button>
+            <button id="demoAnalyzeButton" class="primary-button" type="button">Analyze with AI</button>
+          </div>
+        </footer>
+      </aside>
     </div>
     <script src="./app.js"></script>
   </body>
