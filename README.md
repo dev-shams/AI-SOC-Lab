@@ -192,12 +192,20 @@ Z:\Simulations\Invoke-SocLabScenario.ps1 -Scenario EncodedPowerShell
 | [001](Investigations/incident-001-suspicious-powershell/incident-report.md) | Suspicious PowerShell | Nested PowerShell with `-ExecutionPolicy Bypass` | T1059.001 | Level 4 |
 | [002](Investigations/incident-002-encoded-powershell/incident-report.md) | Encoded PowerShell | Base64 `-EncodedCommand`, decoded during triage | T1059.001, T1027 | Level 12 |
 | [003](Investigations/incident-003-temporary-admin-account/incident-report.md) | Temporary admin account | Account created, elevated, and deleted in 100 ms | T1136.001, T1098, T1070 | Level 12 |
+| [004](Investigations/incident-004-pipeline-failures/incident-report.md) | Two silent detection failures | Total telemetry loss, and a false positive ranked top of queue | — (capability gaps) | High |
 
-Incident 003 is the most substantive: investigating it found that Wazuh's
-built-in mapping for rule `60154` asserts `T1484` (Domain Policy Modification)
-for a *local* group change on a non-domain-joined host, which is wrong. It also
-exposed that four of the seven events had no behavioural triage rule and were
-falling through to a lab-marker label. Both are documented and fixed.
+Incident 003 found that Wazuh's built-in mapping for rule `60154` asserts
+`T1484` (Domain Policy Modification) for a *local* group change on a
+non-domain-joined host, which is wrong. It also exposed that four of the seven
+events had no behavioural triage rule and were falling through to a lab-marker
+label. Both are documented and fixed.
+
+Incident 004 is the one worth reading first. It documents two ways this
+pipeline was **wrong while reporting itself healthy**: a stale agent address
+that caused total loss of endpoint visibility across two days, and a triage
+rule that scored routine Windows patching at 98/100 and ranked it above real
+detections. Neither raised an error. Both were found only by running a known
+attack and noticing the expected alert never arrived.
 
 ---
 
