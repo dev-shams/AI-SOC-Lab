@@ -49,6 +49,7 @@ ships 3,000+ rules and applies them before the console ever sees an alert.
 Investigations/     Incident writeups, timelines, MITRE mappings, evidence
 Detections/         Sigma rules and Wazuh DQL hunting queries
 Simulations/        Self-cleaning Windows attack scenario runner
+Endpoint-Config/    Sysmon configuration applied to the monitored endpoint
 AI-Layer/           Analyst prompt, case briefs, model output
 soc-ai-platform/    The AI SOC console (backend + dashboard)
 scripts/            Lab lifecycle, snapshot export, rule validation
@@ -211,9 +212,28 @@ attack and noticing the expected alert never arrived.
 
 ## Detection engineering
 
-Eight Sigma rules in [`Detections/sigma/`](Detections/sigma/) and five hunting
-queries in [`Detections/wazuh-dql/`](Detections/wazuh-dql/) — one per simulation
-scenario, plus the two original PowerShell rules.
+Eight Sigma rules in [`Detections/sigma/`](Detections/sigma/), five hunting
+queries in [`Detections/wazuh-dql/`](Detections/wazuh-dql/), and five custom
+Wazuh rules in [`Detections/wazuh-rules/`](Detections/wazuh-rules/) that are
+actually loaded into the SIEM.
+
+That last distinction matters. A Sigma file in a repo is not a detection: it
+has to be deployed somewhere that evaluates it. Running every simulation
+scenario and checking what fired found three different failure classes:
+
+| Scenario | Failure | Class |
+| --- | --- | --- |
+| ScheduledTask | Sigma matched `schtasks.exe`; the simulation uses `Register-ScheduledTask` | Rule and simulation could never meet |
+| Certutil | Event arrived, no rule fired | Sigma written but never deployed |
+| RunKey | No registry telemetry at all | Sysmon default config captures only EID 1 and 5 |
+
+All three are fixed: a proper Sysmon config
+([`Endpoint-Config/`](Endpoint-Config/)) unlocks registry, network, file and
+DNS telemetry, and the custom Wazuh rules close the detection side.
+
+```bash
+./scripts/deploy-wazuh-rules.sh
+```
 
 Validate them before committing:
 

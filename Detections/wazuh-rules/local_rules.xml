@@ -1,0 +1,140 @@
+<!--
+  AI SOC Lab — custom Wazuh rules
+  ============================================================================
+  Deployed to /var/ossec/etc/rules/local_rules.xml on the manager.
+
+  These close gaps found by running the lab's own simulation scenarios and
+  observing that telemetry arrived but no rule fired. Each one explains what
+  Wazuh's built-in ruleset already does and why it was not enough, so the
+  reasoning survives without the conversation.
+
+  Rule IDs use the 100000+ range reserved for user rules.
+-->
+
+<group name="soc_lab,windows,sysmon,">
+
+  <!--
+    Registry Run-key persistence
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Wazuh rule 92300 already matches writes to CurrentVersion\Run, but it is
+    level 0 — a classification rule that raises no alert. That is a reasonable
+    default: software writes Run keys legitimately all the time. Wazuh only
+    escalates through child rules when the value has a suspicious extension
+    (92301), was written by reg.exe (92302), or points at a known remote
+    access tool (92303).
+
+    A benign-looking value written by a script interpreter matches none of
+    those, so the lab's RunKey scenario produced Sysmon event 13 and no alert.
+    The two rules below add the discrimination that was missing, without
+    alerting on every Run-key write.
+  -->
+
+  <rule id="100100" level="10">
+    <if_sid>92300</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)(powershell|pwsh|cmd|wscript|cscript|mshta|rundll32)\.exe</field>
+    <description>Logon persistence: Run key written by a script interpreter ($(win.eventdata.image))</description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <group>persistence,registry_persistence,</group>
+  </rule>
+
+  <!--
+    Stronger signal: the value itself launches a shell at logon. Installers
+    register their own executable; they do not normally register cmd.exe.
+  -->
+  <rule id="100101" level="12">
+    <if_sid>92300</if_sid>
+    <field name="win.eventdata.details" type="pcre2">(?i)(cmd\.exe|powershell|pwsh|wscript|cscript|mshta|rundll32|regsvr32)</field>
+    <description>Logon persistence: Run key set to launch a command interpreter — $(win.eventdata.details)</description>
+    <mitre>
+      <id>T1547.001</id>
+      <id>T1059</id>
+    </mitre>
+    <group>persistence,registry_persistence,</group>
+  </rule>
+
+  <!--
+    Certutil living-off-the-land use
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Wazuh rules 92016 and 92017 cover certutil only when it has been
+    *masqueraded* — originalFileName is CertUtil.exe while the image on disk
+    has been renamed. Running the genuine certutil.exe under its own name is
+    not covered, and that is the common case: certutil is signed by Microsoft
+    and trusted, which is precisely why it is abused to decode payloads and
+    download files.
+
+    The lab's Certutil scenario confirmed this: Sysmon event 1 arrived showing
+    "certutil.exe -encode ..." and no rule fired.
+  -->
+  <rule id="100110" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.image" type="pcre2">(?i)certutil\.exe</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\-(encode|decode|urlcache|verifyctl)</field>
+    <description>Certutil used to encode, decode or download — $(win.eventdata.commandLine)</description>
+    <mitre>
+      <id>T1140</id>
+      <id>T1105</id>
+    </mitre>
+    <group>defense_evasion,lolbin,</group>
+  </rule>
+
+  <!--
+    Scheduled task created through PowerShell cmdlets
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    The lab's Sigma rule matches Image endswith schtasks.exe. The simulation
+    uses Register-ScheduledTask, a cmdlet that never spawns schtasks.exe, so
+    rule and simulation could never meet.
+
+    Finding the right parent took three attempts and exposed a structural gap
+    in Wazuh's stock ruleset:
+
+    1. sysmon_event1 + win.eventdata.commandLine. Wrong: a cmdlet runs inside
+       an existing PowerShell process, so no process-creation event carries
+       its name.
+
+    2. 91802 + win.eventdata.scriptBlockText. That is PowerShell event 4104,
+       which deduplicates: PowerShell logs each unique script block once and
+       stays silent on repeats. First run alerts, every later run does not.
+
+    3. 91801 + win.eventdata.payload. Also silent, and this is the useful
+       discovery. Rule 91801 is the root of Wazuh's whole PowerShell tree and
+       chains from <if_sid>60000, 60010</if_sid> - the channel base and
+       WARNING. It omits 60009 (INFORMATION). Because 60009 matches first and
+       analysisd descends into its subtree, INFORMATION-severity events on the
+       PowerShell channel never reach any PowerShell rule.
+
+       Event 4104 carries severityValue VERBOSE, so it bypasses 60009 and
+       reaches the tree. Event 4103 carries INFORMATION and cannot. Stock
+       Wazuh therefore has no coverage of PowerShell module/pipeline logging,
+       which is the event type that fires on every invocation.
+
+    The rule below chains from 60009 directly and re-checks the channel
+    itself, which is what 91801 would have done had it included INFORMATION.
+  -->
+  <rule id="100120" level="10">
+    <if_sid>60009</if_sid>
+    <field name="win.system.channel">^Microsoft-Windows-PowerShell/Operational$</field>
+    <field name="win.eventdata.payload" type="pcre2">(?i)CommandInvocation\((Register|Set|Unregister)-ScheduledTask\)</field>
+    <options>no_full_log</options>
+    <description>Scheduled task created, modified or removed through PowerShell cmdlets</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+    <group>persistence,scheduled_task,</group>
+  </rule>
+
+  <!-- 4104 is still worth matching: it carries the full script text when the
+       block has not been seen before. 100120 covers the repeats. -->
+  <rule id="100121" level="10">
+    <if_sid>91802</if_sid>
+    <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(Register-ScheduledTask|New-ScheduledTaskAction|Set-ScheduledTask)</field>
+    <options>no_full_log</options>
+    <description>Scheduled task cmdlets seen in a PowerShell script block</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+    <group>persistence,scheduled_task,</group>
+  </rule>
+
+</group>
