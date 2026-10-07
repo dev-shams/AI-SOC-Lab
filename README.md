@@ -9,7 +9,7 @@ Built to cover four roles in one project — SOC analyst (investigation),
 detection engineer (rule writing), incident responder (documented response),
 and threat hunter (proactive searching) — with an AI layer on top.
 
-**▶ [Open the live demo](DEMO_URL_PLACEHOLDER)** — the console running against a
+**▶ [Open the live demo](https://dev-shams.github.io/AI-SOC-Lab/)** — the console running against a
 frozen export of real alerts from this lab. No install, no backend. Everything
 in it was produced by the pipeline described below.
 
@@ -78,7 +78,7 @@ the indexer certificates writes real private keys into it. Rebuild it with
 VM running Sysmon and the Wazuh agent.
 
 ```bash
-git clone REPO_URL_PLACEHOLDER "AI SOC Lab" && cd "AI SOC Lab"
+git clone https://github.com/dev-shams/AI-SOC-Lab.git "AI SOC Lab" && cd "AI SOC Lab"
 ./scripts/setup-wazuh.sh
 ```
 
@@ -295,12 +295,13 @@ host serves it directly. Under **Settings → Pages**, publish from the `main`
 branch, `/ (root)` folder. The demo is then at:
 
 ```
-https://<username>.github.io/<repo>/soc-ai-platform/
+https://dev-shams.github.io/AI-SOC-Lab/
 ```
 
-Every asset the page loads is a relative path, and `/api/*` simply 404s, which
-is the signal the console already uses to switch into snapshot mode. There is
-nothing to configure.
+The root `index.html` redirects there from `soc-ai-platform/`, which is where
+the console actually lives. Every asset it loads is a relative path, and
+`/api/*` simply 404s — the signal the console already uses to switch into
+snapshot mode. There is nothing to configure.
 
 Refresh the demo data whenever the lab has produced something worth showing:
 
