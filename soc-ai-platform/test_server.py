@@ -194,5 +194,77 @@ param([Parameter(Mandatory=$true, Position=0, ValueFromPipeline=$true)][string]$
         self.assertEqual(result["policyRule"], "SOC-WAZUH-001")
 
 
+class EventEscapingTests(unittest.TestCase):
+    """Wazuh hands back Windows paths with one escaping layer too many.
+
+    These lock in the normalisation that strips it, because the symptom is
+    cosmetic and easy to reintroduce: nothing fails, the console just shows
+    C:\\\\WINDOWS\\\\system32 to the analyst.
+    """
+
+    def test_doubled_backslashes_collapse_to_one(self):
+        self.assertEqual(
+            server.unescape_event_text(r"C:\\WINDOWS\\system32\\certutil.exe"),
+            r"C:\WINDOWS\system32\certutil.exe",
+        )
+
+    def test_escaped_quotes_lose_their_backslash(self):
+        self.assertEqual(
+            server.unescape_event_text(r"\"C:\\Windows\\cmd.exe\" /c echo hi"),
+            r'"C:\Windows\cmd.exe" /c echo hi',
+        )
+
+    def test_clean_path_is_left_alone(self):
+        # A single backslash before a path letter is not an escape sequence, so
+        # an already-correct value must survive untouched.
+        clean = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+        self.assertEqual(server.unescape_event_text(clean), clean)
+
+    def test_normalisation_is_idempotent(self):
+        once = server.unescape_event_text(r"\"C:\\WINDOWS\\x\"")
+        self.assertEqual(server.unescape_event_text(once), once)
+
+    def test_full_log_keeps_its_escaping(self):
+        # full_log carries a serialised event whose escaping is load-bearing.
+        raw = {"full_log": r"{\"path\":\"C:\\\\Windows\"}", "other": r"C:\\Windows"}
+        result = server.normalize_escaping(raw)
+        self.assertEqual(result["full_log"], raw["full_log"])
+        self.assertEqual(result["other"], r"C:\Windows")
+
+    def test_simplify_alert_cleans_the_description_and_command_line(self):
+        hit = {
+            "_id": "abc",
+            "_index": "wazuh-alerts-4.x-2026.10.07",
+            "_source": {
+                "timestamp": "2026-10-07T06:15:14.932+0000",
+                "rule": {
+                    "id": "100110",
+                    "level": 12,
+                    "description": r"Certutil — \"C:\\WINDOWS\\system32\\certutil.exe\" -encode a.txt",
+                },
+                "agent": {"id": "001", "name": "WIN11-SOC-ENDPOINT", "ip": "192.168.64.3"},
+                "data": {
+                    "win": {
+                        "system": {"eventID": "1", "channel": "Microsoft-Windows-Sysmon/Operational"},
+                        "eventdata": {
+                            "image": r"C:\\Windows\\System32\\certutil.exe",
+                            "commandLine": r"\"C:\\WINDOWS\\system32\\certutil.exe\" -encode a.txt",
+                        },
+                    }
+                },
+            },
+        }
+        result = server.simplify_alert(hit)
+        self.assertEqual(
+            result["rule"]["description"],
+            r'Certutil — "C:\WINDOWS\system32\certutil.exe" -encode a.txt',
+        )
+        self.assertEqual(
+            result["process"]["commandLine"],
+            r'"C:\WINDOWS\system32\certutil.exe" -encode a.txt',
+        )
+        self.assertEqual(result["process"]["image"], r"C:\Windows\System32\certutil.exe")
+
+
 if __name__ == "__main__":
     unittest.main()

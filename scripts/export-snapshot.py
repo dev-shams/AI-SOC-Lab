@@ -17,6 +17,7 @@ variables the console uses.
 """
 import argparse
 import json
+import os
 import re
 import sys
 from datetime import datetime, timezone
@@ -25,6 +26,11 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 APP_DIR = PROJECT_ROOT / "soc-ai-platform"
 sys.path.insert(0, str(APP_DIR))
+
+# A wide export asks the indexer for thousands of alerts in one request, which
+# does not finish inside the console's default 8s budget. Set before importing
+# server, which reads it at module load.
+os.environ.setdefault("WAZUH_INDEXER_TIMEOUT", "120")
 
 import server  # noqa: E402  (needs the path insert above)
 

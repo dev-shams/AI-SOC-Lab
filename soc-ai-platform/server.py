@@ -21,6 +21,9 @@ INDEXER_USER = os.getenv("WAZUH_INDEXER_USER", "admin")
 INDEXER_PASSWORD = os.getenv("WAZUH_INDEXER_PASSWORD", "SecretPassword")
 DEFAULT_MIN_LEVEL = int(os.getenv("WAZUH_MIN_LEVEL", "4"))
 DEFAULT_WINDOW_MINUTES = int(os.getenv("WAZUH_WINDOW_MINUTES", "120"))
+# 8s is comfortable for the console's own 300-alert queries. A snapshot
+# export pulls thousands at once and needs longer, so it raises this.
+INDEXER_TIMEOUT = int(os.getenv("WAZUH_INDEXER_TIMEOUT", "8"))
 RULE_PACK_PATH = Path(
     os.getenv("SOC_TRIAGE_RULE_PACK", str(ROOT / "rules" / "triage-rules.json"))
 ).expanduser()
@@ -62,6 +65,56 @@ def qualified_account(domain, name):
     return name
 
 
+# Wazuh's windows_eventchannel decoder escapes the event once when it builds
+# full_log, and the indexed eventdata fields keep that extra layer. A command
+# line that Windows reported as
+#     "C:\WINDOWS\system32\certutil.exe" -encode ...
+# arrives from the indexer as
+#     \"C:\\WINDOWS\\system32\\certutil.exe\" -encode ...
+# and rule descriptions that interpolate $(win.eventdata.commandLine) inherit
+# it. Displaying that verbatim puts backslash noise in front of the analyst, so
+# one level is removed on read.
+#
+# The scan is left-to-right rather than a chain of str.replace calls, so a
+# doubled escape collapses once instead of cascading: \\\\ becomes \\, not \.
+# A string that is already clean passes through untouched, because a lone
+# backslash before a path letter is not an escape sequence. The exception is a
+# clean UNC path (\\server\share), which this would shorten - it is not a
+# concern here because the indexer never hands back clean values.
+def unescape_event_text(value):
+    if "\\" not in value:
+        return value
+    out = []
+    index = 0
+    end = len(value)
+    while index < end:
+        char = value[index]
+        if char == "\\" and index + 1 < end and value[index + 1] in ("\\", '"'):
+            out.append(value[index + 1])
+            index += 2
+        else:
+            out.append(char)
+            index += 1
+    return "".join(out)
+
+
+# full_log and previous_output hold entire serialised events whose escaping is
+# load-bearing, so they are left alone. Neither reaches the frontend.
+OPAQUE_SOURCE_KEYS = {"full_log", "previous_output"}
+
+
+def normalize_escaping(value, key=None):
+    if key in OPAQUE_SOURCE_KEYS:
+        return value
+    if isinstance(value, str):
+        return unescape_event_text(value)
+    if isinstance(value, dict):
+        return {name: normalize_escaping(item, name) for name, item in value.items()}
+    if isinstance(value, list):
+        return [normalize_escaping(item) for item in value]
+    return value
+
+
 def request_indexer(path, body=None):
     url = f"{INDEXER_URL}{path}"
     headers = {"Content-Type": "application/json"}
@@ -70,12 +123,12 @@ def request_indexer(path, body=None):
     payload = json.dumps(body).encode() if body is not None else None
     request = urllib.request.Request(url, data=payload, headers=headers, method="POST" if body else "GET")
     context = ssl._create_unverified_context()
-    with urllib.request.urlopen(request, context=context, timeout=8) as response:
+    with urllib.request.urlopen(request, context=context, timeout=INDEXER_TIMEOUT) as response:
         return json.loads(response.read().decode())
 
 
 def simplify_alert(hit):
-    source = hit.get("_source", {})
+    source = normalize_escaping(hit.get("_source", {}))
     rule = source.get("rule", {})
     mitre = rule.get("mitre", {})
     win_system = nested(source, ["data", "win", "system"], {})

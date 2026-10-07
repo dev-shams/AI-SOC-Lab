@@ -9,6 +9,17 @@ Built to cover four roles in one project — SOC analyst (investigation),
 detection engineer (rule writing), incident responder (documented response),
 and threat hunter (proactive searching) — with an AI layer on top.
 
+**▶ [Open the live demo](DEMO_URL_PLACEHOLDER)** — the console running against a
+frozen export of real alerts from this lab. No install, no backend. Everything
+in it was produced by the pipeline described below.
+
+![The console overview](docs/images/console-overview.jpg)
+
+Clicking any alert opens the full evidence, the ATT&CK mapping, a generated
+detection rule, and a report draft:
+
+![An alert opened in the detail drawer](docs/images/alert-drawer.jpg)
+
 ---
 
 ## Architecture
@@ -67,7 +78,7 @@ the indexer certificates writes real private keys into it. Rebuild it with
 VM running Sysmon and the Wazuh agent.
 
 ```bash
-git clone <your-repo-url> "AI SOC Lab" && cd "AI SOC Lab"
+git clone REPO_URL_PLACEHOLDER "AI SOC Lab" && cd "AI SOC Lab"
 ./scripts/setup-wazuh.sh
 ```
 
@@ -266,10 +277,43 @@ freeze a point-in-time export of real alerts:
 python3 scripts/export-snapshot.py --anonymize
 ```
 
-This writes `soc-ai-platform/sample-data/snapshot.json`. When the console loads
-with no backend reachable, it serves that snapshot and labels itself "Snapshot"
-in the sidebar. Deploy `soc-ai-platform/` as a static site and the queue,
-triage, evidence panels, and template analysis all work with real data.
+This writes `soc-ai-platform/sample-data/snapshot.json`. Drop `--anonymize` to
+keep the real hostname and username, which is what this repo does — the git
+history carries the author's name anyway, so scrubbing one file would hide
+nothing.
+
+When the console loads and no backend answers, it serves that snapshot and
+labels itself "Snapshot" in the sidebar. Everything still works: the queue,
+triage scores, the evidence drawer, surrounding-event timelines, generated
+Sigma, and template analysis. Only the live indexer and the model-backed
+assistant need a machine behind them.
+
+### Hosting it on GitHub Pages
+
+The console is plain HTML, CSS and JavaScript with no build step, so a static
+host serves it directly. Under **Settings → Pages**, publish from the `main`
+branch, `/ (root)` folder. The demo is then at:
+
+```
+https://<username>.github.io/<repo>/soc-ai-platform/
+```
+
+Every asset the page loads is a relative path, and `/api/*` simply 404s, which
+is the signal the console already uses to switch into snapshot mode. There is
+nothing to configure.
+
+Refresh the demo data whenever the lab has produced something worth showing:
+
+```bash
+python3 scripts/export-snapshot.py --minutes 129600 --fetch 7000
+git add soc-ai-platform/sample-data/snapshot.json && git commit && git push
+```
+
+The wide window matters. The default seven days captures only recent noise;
+`--minutes 129600` is 90 days, which reaches back far enough to include the
+incidents the writeups refer to. `--fetch` must exceed the number of alerts in
+the window, or triage only sees the newest slice and older candidates are
+silently dropped.
 
 ---
 
